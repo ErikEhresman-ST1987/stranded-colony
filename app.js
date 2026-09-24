@@ -14,7 +14,7 @@ const STARTING_SURVIVORS=[
 const SaveManager={
   db:null,
   async open(){if(this.db)return this.db;return new Promise((resolve,reject)=>{const request=indexedDB.open(DB_NAME,DB_VERSION);request.onupgradeneeded=()=>{const db=request.result;if(!db.objectStoreNames.contains(STORE_NAME))db.createObjectStore(STORE_NAME)};request.onsuccess=()=>{this.db=request.result;this.db.onversionchange=()=>{this.db.close();this.db=null};resolve(this.db)};request.onerror=()=>reject(request.error||new Error("Unable to open local save storage."));request.onblocked=()=>reject(new Error("Local save storage is blocked by another open version of the game."))})},
-  async readActiveSave(){const db=await this.open();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE_NAME,"readonly"),request=tx.objectStore(STORE_NAME).get(ACTIVE_SAVE_KEY);request.onsuccess=()=>resolve(request.result??null);request.onerror=()=>reject(request.error||new Error("Unable to read the local save."))})},
+  async readActiveSave(){const db=await this.open();return new Promise((resolve,reject)=>{const tx=db.transaction(STORE_NAME,"readonly"),request=tx.objectStore(STORE_NAME).get(ACTIVE_SAVE_KEY);let result=null;request.onsuccess=()=>{result=request.result??null};request.onerror=()=>reject(request.error||new Error("Unable to read the local save."));tx.oncomplete=()=>resolve(result);tx.onerror=()=>reject(tx.error||new Error("Unable to read the local save."));tx.onabort=()=>reject(tx.error||new Error("The local save read was interrupted."))})},
   async writeActiveSave(state){const validation=validateGameState(state);if(!validation.ok)throw new Error(validation.message);const db=await this.open(),snapshot=structuredClone(state);return new Promise((resolve,reject)=>{const tx=db.transaction(STORE_NAME,"readwrite");tx.objectStore(STORE_NAME).put(snapshot,ACTIVE_SAVE_KEY);tx.oncomplete=()=>resolve();tx.onerror=()=>reject(tx.error||new Error("Unable to save the colony."));tx.onabort=()=>reject(tx.error||new Error("The colony save was not completed."))})}
 };
 
@@ -71,8 +71,8 @@ async function createColony(){
 }
 
 async function loadColony(){
-  clearError();setBusy(true);
-  try{const candidate=await SaveManager.readActiveSave();if(!candidate)throw new Error("No local colony save was found.");await activateState(candidate,candidate.saveVersion===1?"Save upgraded and loaded":"Loaded local save")}catch(error){showError(error)}finally{setBusy(false)}
+  clearError();setBusy(true);setSaveStatus("Loading local save…");
+  try{const candidate=await SaveManager.readActiveSave();if(!candidate)throw new Error("No local colony save was found.");const wasV1=candidate.saveVersion===1;await activateState(candidate,wasV1?"Save upgraded and loaded":"Loaded local save")}catch(error){showError(error)}finally{setBusy(false)}
 }
 
 function render(){
