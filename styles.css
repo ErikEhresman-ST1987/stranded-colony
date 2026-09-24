@@ -1,0 +1,59 @@
+:root {
+  color-scheme: light;
+  --ink: #17211d;
+  --muted: #596861;
+  --surface: #f5f3eb;
+  --panel: #fffdf6;
+  --line: #cdd3ca;
+  --accent: #263c33;
+  --accent-soft: #dce4da;
+  --terrain: #aab69a;
+  --terrain-deep: #71806b;
+  --warning: #8a3f2c;
+  font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; }
+html { min-height: 100%; background: var(--surface); }
+body { margin: 0; min-width: 320px; min-height: 100vh; color: var(--ink); background: var(--surface); }
+button { font: inherit; }
+.app-shell { width: min(100%, 1180px); min-height: 100vh; margin: 0 auto; padding: env(safe-area-inset-top) max(16px, env(safe-area-inset-right)) env(safe-area-inset-bottom) max(16px, env(safe-area-inset-left)); }
+.topbar { min-height: 78px; display: flex; align-items: center; justify-content: space-between; gap: 16px; padding: 14px 0; }
+h1, h2, p { margin-top: 0; }
+h1 { margin-bottom: 0; font-size: clamp(1.35rem, 4vw, 1.8rem); }
+h2 { margin-bottom: 8px; font-size: clamp(1.2rem, 4vw, 1.55rem); }
+.eyebrow, .board-kicker { margin-bottom: 3px; font-size: .72rem; font-weight: 800; letter-spacing: .13em; color: var(--muted); }
+.save-indicator { flex: 0 0 auto; max-width: 45%; padding: 8px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--panel); font-size: .78rem; font-weight: 700; text-align: center; }
+.game-surface { display: grid; gap: 14px; }
+.vitals { display: flex; gap: 8px; overflow-x: auto; scrollbar-width: none; }
+.vitals::-webkit-scrollbar { display: none; }
+.vitals span { flex: 0 0 auto; min-height: 42px; display: inline-flex; align-items: center; gap: 6px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 12px; background: var(--panel); font-size: .85rem; }
+.vitals strong { color: var(--muted); font-weight: 650; }
+.board-shell { position: relative; min-height: clamp(320px, 54vh, 590px); overflow: hidden; border: 1px solid #899682; border-radius: 22px; background: linear-gradient(155deg, #c8c7ad 0 18%, var(--terrain) 18% 62%, var(--terrain-deep) 100%); box-shadow: inset 0 0 0 1px rgba(255,255,255,.22); }
+.board-horizon { position: absolute; inset: 0; background: linear-gradient(145deg, transparent 0 46%, rgba(63,74,61,.18) 46% 48%, transparent 48% 100%), radial-gradient(ellipse at 18% 75%, rgba(70,82,65,.3) 0 10%, transparent 11%), radial-gradient(ellipse at 78% 28%, rgba(237,226,185,.28) 0 8%, transparent 9%); transform: scale(1.08); }
+.board-content { position: absolute; left: 18px; right: 18px; bottom: 18px; max-width: 560px; padding: 18px; border: 1px solid rgba(255,255,255,.42); border-radius: 16px; background: rgba(248,247,238,.88); backdrop-filter: blur(6px); }
+.board-content p:last-child { margin-bottom: 0; line-height: 1.5; }
+.control-panel { display: grid; gap: 14px; padding: 18px; border: 1px solid var(--line); border-radius: 18px; background: var(--panel); }
+.muted { margin-bottom: 0; color: var(--muted); line-height: 1.5; }
+.actions { display: flex; flex-wrap: wrap; gap: 10px; }
+button { min-height: 48px; padding: 11px 16px; border-radius: 12px; border: 1px solid var(--accent); cursor: pointer; font-weight: 750; }
+button:focus-visible { outline: 3px solid #6b8d7b; outline-offset: 3px; }
+.primary { color: #fff; background: var(--accent); }
+.secondary { color: var(--accent); background: transparent; }
+button:disabled { cursor: wait; opacity: .65; }
+.error-message { margin: 0; padding: 12px; border: 1px solid #d7a394; border-radius: 10px; color: var(--warning); background: #fff2ee; }
+footer { display: flex; justify-content: space-between; gap: 12px; padding: 18px 2px 26px; color: var(--muted); font-size: .78rem; }
+@media (min-width: 760px) {
+  .app-shell { padding-left: 28px; padding-right: 28px; }
+  .control-panel { grid-template-columns: minmax(0,1fr) auto; align-items: center; }
+  .error-message { grid-column: 1 / -1; }
+  .board-content { left: 28px; bottom: 28px; padding: 22px; }
+}
+@media (max-width: 430px) {
+  .topbar { align-items: flex-start; }
+  .save-indicator { max-width: 48%; }
+  .actions button { width: 100%; }
+  footer { flex-direction: column; }
+}
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { scroll-behavior: auto !important; transition: none !important; animation: none !important; }
+}

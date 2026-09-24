@@ -1,0 +1,6 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Stranded Colony">
+  <rect width="512" height="512" rx="96" fill="#263c33"/>
+  <path d="M92 350 206 154l49 84 54-92 111 204Z" fill="#aab69a"/>
+  <path d="M133 350h246" stroke="#f5f3eb" stroke-width="24" stroke-linecap="round"/>
+  <path d="m213 290 43-75 43 75" fill="none" stroke="#f5f3eb" stroke-width="20" stroke-linejoin="round"/>
+</svg>
