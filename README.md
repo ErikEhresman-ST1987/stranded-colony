@@ -4,7 +4,21 @@ Stranded Colony is a local-first, turn-based colony survival and development gam
 
 ## Current checkpoint
 
-Increment 1 — Application Shell and Persistence Foundation — implemented. Activation and verification on the deployed GitHub Pages build are still required before Increment 2 begins.
+Increment 1 — Application Shell and Persistence Foundation — **verified**.
+
+Increment 2 — First Colony State and Visible Board — implemented; activation and verification are required before Increment 3.
+
+## Increment 2 scope
+
+- A visible crash-site board now establishes the approved temperate alien frontier direction.
+- The broken colony ship is the dominant board anchor.
+- Emergency Shelter and Wreck Salvage are the first visible sites.
+- Five individual survivors are represented on the board and in a compact roster.
+- The first visible resource state is Food 18, Water 20, and Salvage 12.
+- This increment is deliberately observational: assignments, resource consumption/production, and turn resolution remain inactive.
+- Existing Increment 1 save-format v1 colonies are upgraded sequentially to save-format v2 when loaded. The original save is not erased before a valid v2 state is written.
+
+The exact starting values and named survivors are the minimum concrete content needed to exercise this playable-slice checkpoint; they can be tuned later without changing the architecture.
 
 ## Foundation
 
@@ -12,54 +26,21 @@ Increment 1 — Application Shell and Persistence Foundation — implemented. Ac
 - Central authoritative `gameState`.
 - IndexedDB is the authoritative local save technology.
 - `SaveManager` is the sole persistence owner.
-- Save format begins at `saveVersion: 1`.
+- Current save format: `saveVersion: 2`.
 - One active colony save is stored initially.
 - Static application shell is cached by a small versioned service worker.
 - Game saves are never stored in the service-worker cache.
 - No real-time/offline colony progression.
 - No framework, backend, cloud account, analytics, or external runtime dependency.
 
-## Data boundaries
+## Increment 2 verification gate
 
-The save keeps generated scenario facts separate from mutable playthrough state. Stable game content definitions will live in application code/data as they are introduced rather than being copied into every save.
+1. Reopen the deployed app and confirm your existing v1 local save is offered as ready to upgrade.
+2. Load it. Confirm the status reports that it was upgraded and loaded, with Turn 0, 5 survivors, Food 18, Water 20, and Salvage 12.
+3. Confirm the board visibly shows the broken ship, Emergency Shelter, Wreck Salvage, and five small survivor figures without horizontal overflow.
+4. Confirm the survivor roster shows five named survivors and roles.
+5. Fully close and reopen the app. Load the colony again and confirm it now loads normally as v2 with the same state.
+6. Start a new colony, accept replacement, and confirm the same complete first colony state is saved.
+7. After one online reload, test Airplane Mode and confirm the updated board shell still opens.
 
-Current v1 save shape:
-
-```text
-saveVersion
-meta
-scenario
-  worldSeed
-  established
-playthrough
-  turn
-  colony
-  resources
-  survivors
-  assignments
-  projects
-  research
-  flags
-```
-
-These are ownership seams, not promises that every listed gameplay system is implemented.
-
-## Persistence constants
-
-- IndexedDB database: `stranded-colony`
-- Database version: `1`
-- Object store: `saves`
-- Active save key: `active-colony`
-- Save format version: `1`
-
-## Increment 1 verification gate
-
-1. Open the deployed GitHub Pages app on a phone/tablet-sized screen and desktop.
-2. Confirm there is no horizontal overflow and the board surface remains dominant.
-3. Create a new colony; confirm Turn 0 and “Foundation ready” appear.
-4. Fully close/reload the page. Confirm “Local save found” appears, then choose **Load Saved Colony** and confirm the same saved colony loads.
-5. Try **Start New Colony** and cancel the replacement warning; confirm the existing colony remains.
-6. Reopen online once so the service worker has cached the shell. Then enable Airplane Mode and reopen the installed/site app; confirm the shell loads.
-7. Return online and confirm normal loading still works and no save error appears.
-
-Do not begin Increment 2 until Increment 1 is activated and these checks are confirmed.
+Do not begin Increment 3 until Increment 2 is activated and these checks are confirmed.

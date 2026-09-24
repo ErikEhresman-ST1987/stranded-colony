@@ -13,34 +13,43 @@
 <body>
   <div class="app-shell">
     <header class="topbar">
-      <div>
-        <p class="eyebrow">STRANDED COLONY</p>
-        <h1>Crash Site</h1>
-      </div>
+      <div><p class="eyebrow">STRANDED COLONY</p><h1>Crash Site</h1></div>
       <div class="save-indicator" id="saveIndicator" role="status" aria-live="polite">Checking local save…</div>
     </header>
 
     <main class="game-surface">
       <section class="vitals" aria-label="Colony status">
         <span><strong>Turn</strong> <b id="turnValue">—</b></span>
+        <span><strong>Survivors</strong> <b id="survivorValue">—</b></span>
+        <span><strong>Food</strong> <b id="foodValue">—</b></span>
+        <span><strong>Water</strong> <b id="waterValue">—</b></span>
+        <span><strong>Salvage</strong> <b id="salvageValue">—</b></span>
         <span><strong>Status</strong> <b id="colonyStatus">No active colony</b></span>
       </section>
 
       <section class="board-shell" aria-labelledby="boardTitle">
-        <div class="board-horizon" aria-hidden="true"></div>
+        <div class="terrain terrain-a" aria-hidden="true"></div>
+        <div class="terrain terrain-b" aria-hidden="true"></div>
+        <div class="ship-wreck" aria-hidden="true">
+          <span class="ship-tail"></span><span class="ship-body"></span><span class="ship-break"></span>
+        </div>
+        <div class="site-marker shelter-site" aria-label="Emergency shelter site"><span class="site-icon">⌂</span><b>Emergency Shelter</b><small>Operational</small></div>
+        <div class="site-marker salvage-site" aria-label="Wreck salvage site"><span class="site-icon">◇</span><b>Wreck Salvage</b><small>Accessible</small></div>
+        <div class="survivor-cluster" id="survivorCluster" aria-label="Survivors at the crash site"></div>
         <div class="board-content">
           <p class="board-kicker">TEMPERATE FRONTIER</p>
-          <h2 id="boardTitle">Colony Board</h2>
-          <p id="boardMessage">Create a colony to establish a local save. The playable crash site will arrive in the next verified increment.</p>
+          <h2 id="boardTitle">Crash Site</h2>
+          <p id="boardMessage">Create or load a colony to reveal the first colony state.</p>
         </div>
       </section>
 
+      <section class="state-panel" id="statePanel" aria-labelledby="stateTitle" hidden>
+        <div><p class="eyebrow">FIRST COLONY STATE</p><h2 id="stateTitle">Survivors of the landing</h2><p class="muted">The colony has shelter and access to the wreck. Assignments and turn actions are not active yet.</p></div>
+        <div class="survivor-list" id="survivorList"></div>
+      </section>
+
       <section class="control-panel" aria-labelledby="controlsTitle">
-        <div>
-          <p class="eyebrow">LOCAL COLONY</p>
-          <h2 id="controlsTitle">Begin or continue</h2>
-          <p class="muted" id="persistenceMessage">Save data stays on this device and does not advance while the game is closed.</p>
-        </div>
+        <div><p class="eyebrow">LOCAL COLONY</p><h2 id="controlsTitle">Begin or continue</h2><p class="muted">Save data stays on this device and does not advance while the game is closed.</p></div>
         <div class="actions">
           <button class="primary" id="newGameButton" type="button">Create New Colony</button>
           <button class="secondary" id="loadGameButton" type="button" hidden>Load Saved Colony</button>
@@ -48,11 +57,7 @@
         <p class="error-message" id="errorMessage" role="alert" hidden></p>
       </section>
     </main>
-
-    <footer>
-      <span>Local-first • Offline-capable</span>
-      <span id="versionLabel">Save format v1</span>
-    </footer>
+    <footer><span>Local-first • Offline-capable</span><span id="versionLabel">Save format v2</span></footer>
   </div>
   <script src="./app.js" defer></script>
 </body>
