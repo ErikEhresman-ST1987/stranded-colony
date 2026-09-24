@@ -4,43 +4,29 @@ Stranded Colony is a local-first, turn-based colony survival and development gam
 
 ## Current checkpoint
 
-Increment 1 — Application Shell and Persistence Foundation — **verified**.
+- Increment 1 — Application Shell and Persistence Foundation — **verified**
+- Increment 2 — First Colony State and Visible Board — **verified**
+- Increment 3 — Assignments and Resources — **verified**
+- Increment 4 — Authoritative Turn Resolution — implemented; activation and verification required before Increment 5
 
-Increment 2 — First Colony State and Visible Board — implemented; activation and verification are required before Increment 3.
+## Increment 4 scope
 
-## Increment 2 scope
+The first authoritative turn loop is active: plan assignments, commit the turn, resolve resource changes, advance the turn exactly once, validate/save the resulting state, and render it.
 
-- A visible crash-site board now establishes the approved temperate alien frontier direction.
-- The broken colony ship is the dominant board anchor.
-- Emergency Shelter and Wreck Salvage are the first visible sites.
-- Five individual survivors are represented on the board and in a compact roster.
-- The first visible resource state is Food 18, Water 20, and Salvage 12.
-- This increment is deliberately observational: assignments, resource consumption/production, and turn resolution remain inactive.
-- Existing Increment 1 save-format v1 colonies are upgraded sequentially to save-format v2 when loaded. The original save is not erased before a valid v2 state is written.
+For this first-slice balance, each survivor requires 1 Food and 1 Water per turn. Each survivor assigned to Forage produces 3 Food; Secure Water produces 3 Water; Salvage Wreck produces 3 Salvage. Maintain Shelter is a valid assignment but has no resource yield in this increment.
 
-The exact starting values and named survivors are the minimum concrete content needed to exercise this playable-slice checkpoint; they can be tuned later without changing the architecture.
+Turn resolution is deterministic. No random events, projects, research, injuries, survivor changes, or risk systems are active yet. Assignments remain in place after a turn so the player can review or change the next plan.
 
-## Foundation
+Save format remains v2; the existing schema already contains all state required for this increment.
 
-- Native HTML, CSS, and JavaScript.
-- Central authoritative `gameState`.
-- IndexedDB is the authoritative local save technology.
-- `SaveManager` is the sole persistence owner.
-- Current save format: `saveVersion: 2`.
-- One active colony save is stored initially.
-- Static application shell is cached by a small versioned service worker.
-- Game saves are never stored in the service-worker cache.
-- No real-time/offline colony progression.
-- No framework, backend, cloud account, analytics, or external runtime dependency.
+## Increment 4 verification gate
 
-## Increment 2 verification gate
+1. Load the verified colony and note its current Turn, Food, Water, Salvage, and assignments.
+2. Use a simple test plan: one survivor on Forage, one on Water, one on Salvage, and the other two on any non-producing assignments.
+3. Commit one turn. With five survivors, Food should change by -2, Water by -2, Salvage by +3, and Turn by exactly +1.
+4. Confirm the result message reports those same changes and assignments remain selected.
+5. Fully close and reopen the app, load the colony, and confirm the new turn number, resources, and assignments persisted.
+6. Commit one more turn and confirm the same deterministic rules apply exactly once.
+7. After an online reload, test Airplane Mode: load the colony and commit a turn. Confirm the turn resolves and persists offline.
 
-1. Reopen the deployed app and confirm your existing v1 local save is offered as ready to upgrade.
-2. Load it. Confirm the status reports that it was upgraded and loaded, with Turn 0, 5 survivors, Food 18, Water 20, and Salvage 12.
-3. Confirm the board visibly shows the broken ship, Emergency Shelter, Wreck Salvage, and five small survivor figures without horizontal overflow.
-4. Confirm the survivor roster shows five named survivors and roles.
-5. Fully close and reopen the app. Load the colony again and confirm it now loads normally as v2 with the same state.
-6. Start a new colony, accept replacement, and confirm the same complete first colony state is saved.
-7. After one online reload, test Airplane Mode and confirm the updated board shell still opens.
-
-Do not begin Increment 3 until Increment 2 is activated and these checks are confirmed.
+Do not begin Increment 5 until Increment 4 is activated and these checks are confirmed.
