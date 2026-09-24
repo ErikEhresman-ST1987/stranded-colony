@@ -5,6 +5,7 @@ let gameState=null;
 const ui={};
 const WORK_OPTIONS=[["unassigned","Unassigned"],["shelter","Maintain Shelter"],["salvage","Salvage Wreck"],["forage","Forage for Food"],["water","Secure Water"]];
 const TURN_RULES={foodPerSurvivor:1,waterPerSurvivor:1,forageFood:3,secureWater:3,salvageYield:3};
+const PROJECTS={waterCollector:{id:"water-collector",name:"Water Collector",salvageCost:9,waterPerTurn:2}};
 const STARTING_SURVIVORS=[
   {id:"mara-vale",name:"Mara Vale",role:"Systems Technician"},
   {id:"jonas-reed",name:"Jonas Reed",role:"Field Medic"},
@@ -88,12 +89,13 @@ function resolveTurn(sourceState){
   if(!plan.ok)throw new Error(plan.message);
   const survivorCount=Object.keys(p.survivors).length,counts={shelter:0,salvage:0,forage:0,water:0};
   Object.values(p.assignments).forEach(id=>{if(id in counts)counts[id]++});
-  const delta={food:counts.forage*TURN_RULES.forageFood-survivorCount*TURN_RULES.foodPerSurvivor,water:counts.water*TURN_RULES.secureWater-survivorCount*TURN_RULES.waterPerSurvivor,salvage:counts.salvage*TURN_RULES.salvageYield};
+  const collectorBuilt=Boolean(p.projects?.[PROJECTS.waterCollector.id]?.complete),collectorWater=collectorBuilt?PROJECTS.waterCollector.waterPerTurn:0;
+  const delta={food:counts.forage*TURN_RULES.forageFood-survivorCount*TURN_RULES.foodPerSurvivor,water:counts.water*TURN_RULES.secureWater+collectorWater-survivorCount*TURN_RULES.waterPerSurvivor,salvage:counts.salvage*TURN_RULES.salvageYield};
   p.resources.food=Math.max(0,p.resources.food+delta.food);
   p.resources.water=Math.max(0,p.resources.water+delta.water);
   p.resources.salvage=Math.max(0,p.resources.salvage+delta.salvage);
   p.turn+=1;
-  p.flags.lastTurn={turn:p.turn,delta,counts};
+  p.flags.lastTurn={turn:p.turn,delta,counts,improvements:{waterCollector:collectorWater}};
   next.meta.updatedAt=new Date().toISOString();
   return next
 }
@@ -111,6 +113,20 @@ async function commitTurn(){
   }catch(error){showError(error)}finally{setBusy(false);ui.commitTurnButton.disabled=false}
 }
 function signed(value){return value>0?"+"+value:String(value)}
+
+async function buildWaterCollector(){
+  if(!gameState)return;
+  clearError();
+  const project=PROJECTS.waterCollector,p=gameState.playthrough;
+  if(p.projects?.[project.id]?.complete)return;
+  if(p.resources.salvage<project.salvageCost){showError(new Error("The colony needs "+project.salvageCost+" Salvage to build the Water Collector."));return}
+  const next=structuredClone(gameState);
+  next.playthrough.resources.salvage-=project.salvageCost;
+  next.playthrough.projects[project.id]={complete:true,builtTurn:next.playthrough.turn};
+  next.meta.updatedAt=new Date().toISOString();
+  setBusy(true);
+  try{await SaveManager.writeActiveSave(next);gameState=next;render();setSaveStatus("Improvement built")}catch(error){showError(error)}finally{setBusy(false)}
+}
 
 async function changeAssignment(event){
   if(!gameState)return;
@@ -134,6 +150,7 @@ function render(){
   ui.boardMessage.textContent=hasState?"Set the work plan, then commit the turn. The colony consumes 1 Food and 1 Water per survivor; assigned work produces resources before the resulting state is saved.":"Create or load a colony to reveal the first colony state.";
   ui.newGameButton.textContent=hasState?"Start New Colony":"Create New Colony";
   ui.statePanel.hidden=!hasState;
+  ui.projectPanel.hidden=!hasState;
   ui.survivorCluster.replaceChildren();
   ui.survivorList.replaceChildren();
   if(hasState){
@@ -144,18 +161,21 @@ function render(){
     const counts={shelter:0,salvage:0,forage:0,water:0};Object.values(p.assignments).forEach(id=>{if(id in counts)counts[id]++});
     ui.assignmentSummary.textContent=assigned+" of 5 assigned • Shelter "+counts.shelter+" • Salvage "+counts.salvage+" • Food "+counts.forage+" • Water "+counts.water;
     ui.commitTurnButton.disabled=false;
+    const project=PROJECTS.waterCollector,built=Boolean(p.projects?.[project.id]?.complete),canBuild=p.resources.salvage>=project.salvageCost;
+    ui.projectPanel.classList.toggle("complete",built);ui.buildProjectButton.hidden=built;ui.buildProjectButton.disabled=!canBuild;
+    ui.projectStatus.textContent=built?"Built • +2 Water each turn":canBuild?"Ready to build":"Needs "+(project.salvageCost-p.resources.salvage)+" more Salvage";
   }else{ui.commitTurnButton.disabled=true;ui.turnResult.hidden=true}
   if(hasState&&p.flags.lastTurn&&!ui.turnResult.textContent){const last=p.flags.lastTurn;ui.turnResult.textContent="Last resolved: Turn "+last.turn+" • Food "+signed(last.delta.food)+" • Water "+signed(last.delta.water)+" • Salvage "+signed(last.delta.salvage);ui.turnResult.hidden=false}
 }
 
 function setSaveStatus(text){ui.saveIndicator.textContent=text}
-function setBusy(busy){ui.newGameButton.disabled=busy;ui.loadGameButton.disabled=busy;if(ui.commitTurnButton)ui.commitTurnButton.disabled=busy}
+function setBusy(busy){ui.newGameButton.disabled=busy;ui.loadGameButton.disabled=busy;if(ui.commitTurnButton)ui.commitTurnButton.disabled=busy;if(ui.buildProjectButton&&!ui.buildProjectButton.hidden)ui.buildProjectButton.disabled=busy}
 function showError(error){console.error(error);ui.errorMessage.textContent=error instanceof Error?error.message:"An unexpected local-storage error occurred.";ui.errorMessage.hidden=false;setSaveStatus("Save unavailable")}
 function clearError(){ui.errorMessage.hidden=true;ui.errorMessage.textContent=""}
 
 async function initialize(){
-  Object.assign(ui,{saveIndicator:document.querySelector("#saveIndicator"),turnValue:document.querySelector("#turnValue"),survivorValue:document.querySelector("#survivorValue"),foodValue:document.querySelector("#foodValue"),waterValue:document.querySelector("#waterValue"),salvageValue:document.querySelector("#salvageValue"),assignedValue:document.querySelector("#assignedValue"),colonyStatus:document.querySelector("#colonyStatus"),boardMessage:document.querySelector("#boardMessage"),newGameButton:document.querySelector("#newGameButton"),loadGameButton:document.querySelector("#loadGameButton"),errorMessage:document.querySelector("#errorMessage"),statePanel:document.querySelector("#statePanel"),survivorList:document.querySelector("#survivorList"),assignmentSummary:document.querySelector("#assignmentSummary"),commitTurnButton:document.querySelector("#commitTurnButton"),turnResult:document.querySelector("#turnResult"),survivorCluster:document.querySelector("#survivorCluster")});
-  ui.newGameButton.addEventListener("click",createColony);ui.loadGameButton.addEventListener("click",loadColony);ui.commitTurnButton.addEventListener("click",commitTurn);
+  Object.assign(ui,{saveIndicator:document.querySelector("#saveIndicator"),turnValue:document.querySelector("#turnValue"),survivorValue:document.querySelector("#survivorValue"),foodValue:document.querySelector("#foodValue"),waterValue:document.querySelector("#waterValue"),salvageValue:document.querySelector("#salvageValue"),assignedValue:document.querySelector("#assignedValue"),colonyStatus:document.querySelector("#colonyStatus"),boardMessage:document.querySelector("#boardMessage"),newGameButton:document.querySelector("#newGameButton"),loadGameButton:document.querySelector("#loadGameButton"),errorMessage:document.querySelector("#errorMessage"),statePanel:document.querySelector("#statePanel"),survivorList:document.querySelector("#survivorList"),assignmentSummary:document.querySelector("#assignmentSummary"),commitTurnButton:document.querySelector("#commitTurnButton"),projectPanel:document.querySelector("#projectPanel"),buildProjectButton:document.querySelector("#buildProjectButton"),projectStatus:document.querySelector("#projectStatus"),turnResult:document.querySelector("#turnResult"),survivorCluster:document.querySelector("#survivorCluster")});
+  ui.newGameButton.addEventListener("click",createColony);ui.loadGameButton.addEventListener("click",loadColony);ui.commitTurnButton.addEventListener("click",commitTurn);ui.buildProjectButton.addEventListener("click",buildWaterCollector);
   try{await SaveManager.open();const existing=await SaveManager.readActiveSave();if(existing){if(existing.saveVersion===1||validateGameState(existing).ok){ui.loadGameButton.hidden=false;setSaveStatus(existing.saveVersion===1?"Local save ready to upgrade":"Local save found")}else{setSaveStatus("Save needs attention");showError(new Error(validateGameState(existing).message))}}else setSaveStatus("Ready for new colony")}catch(error){showError(error)}
   render();
   if("serviceWorker"in navigator)window.addEventListener("load",()=>{navigator.serviceWorker.register("./service-worker.js").catch(error=>console.error("Service worker registration failed:",error))})
