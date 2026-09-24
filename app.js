@@ -3,6 +3,7 @@
 const SAVE_VERSION=2,DB_NAME="stranded-colony",DB_VERSION=1,STORE_NAME="saves",ACTIVE_SAVE_KEY="active-colony";
 let gameState=null;
 const ui={};
+const WORK_OPTIONS=[["unassigned","Unassigned"],["shelter","Maintain Shelter"],["salvage","Salvage Wreck"],["forage","Forage for Food"],["water","Secure Water"]];
 const STARTING_SURVIVORS=[
   {id:"mara-vale",name:"Mara Vale",role:"Systems Technician"},
   {id:"jonas-reed",name:"Jonas Reed",role:"Field Medic"},
@@ -75,6 +76,15 @@ async function loadColony(){
   try{const candidate=await SaveManager.readActiveSave();if(!candidate)throw new Error("No local colony save was found.");const wasV1=candidate.saveVersion===1;await activateState(candidate,wasV1?"Save upgraded and loaded":"Loaded local save")}catch(error){showError(error)}finally{setBusy(false)}
 }
 
+async function changeAssignment(event){
+  if(!gameState)return;
+  const survivorId=event.target.dataset.survivorId,workId=event.target.value,previous=gameState.playthrough.assignments[survivorId];
+  if(!WORK_OPTIONS.some(([id])=>id===workId))return;
+  if(workId==="unassigned")delete gameState.playthrough.assignments[survivorId];else gameState.playthrough.assignments[survivorId]=workId;
+  gameState.meta.updatedAt=new Date().toISOString();
+  try{await SaveManager.writeActiveSave(gameState);render();setSaveStatus("Assignment saved")}catch(error){if(previous)gameState.playthrough.assignments[survivorId]=previous;else delete gameState.playthrough.assignments[survivorId];render();showError(error)}
+}
+
 function render(){
   const hasState=Boolean(gameState),p=gameState?.playthrough;
   ui.turnValue.textContent=hasState?String(p.turn):"—";
@@ -82,8 +92,10 @@ function render(){
   ui.foodValue.textContent=hasState?String(p.resources.food):"—";
   ui.waterValue.textContent=hasState?String(p.resources.water):"—";
   ui.salvageValue.textContent=hasState?String(p.resources.salvage):"—";
+  const assigned=hasState?Object.keys(p.assignments).length:0;
+  ui.assignedValue.textContent=hasState?assigned+"/5":"—";
   ui.colonyStatus.textContent=hasState?"Crash site established":"No active colony";
-  ui.boardMessage.textContent=hasState?"The survivors have secured emergency shelter beside the broken colony ship. The wreck remains the colony’s first source of usable material.":"Create or load a colony to reveal the first colony state.";
+  ui.boardMessage.textContent=hasState?"Set the colony’s work plan below. Assignments are saved, but no resources are produced or consumed until turn resolution is introduced.":"Create or load a colony to reveal the first colony state.";
   ui.newGameButton.textContent=hasState?"Start New Colony":"Create New Colony";
   ui.statePanel.hidden=!hasState;
   ui.survivorCluster.replaceChildren();
@@ -91,8 +103,10 @@ function render(){
   if(hasState){
     Object.values(p.survivors).forEach(s=>{
       const token=document.createElement("span");token.className="survivor-token";token.title=s.name;ui.survivorCluster.append(token);
-      const card=document.createElement("div");card.className="survivor-card";const name=document.createElement("b"),role=document.createElement("small");name.textContent=s.name;role.textContent=s.role;card.append(name,role);ui.survivorList.append(card)
-    })
+      const card=document.createElement("div");card.className="survivor-card";const name=document.createElement("b"),role=document.createElement("small"),select=document.createElement("select");name.textContent=s.name;role.textContent=s.role;select.dataset.survivorId=s.id;select.setAttribute("aria-label","Assignment for "+s.name);WORK_OPTIONS.forEach(([id,label])=>{const option=document.createElement("option");option.value=id;option.textContent=label;select.append(option)});select.value=p.assignments[s.id]||"unassigned";select.addEventListener("change",changeAssignment);if(select.value!=="unassigned")card.classList.add("assigned");card.append(name,role,select);ui.survivorList.append(card)
+    });
+    const counts={shelter:0,salvage:0,forage:0,water:0};Object.values(p.assignments).forEach(id=>{if(id in counts)counts[id]++});
+    ui.assignmentSummary.textContent=assigned+" of 5 assigned • Shelter "+counts.shelter+" • Salvage "+counts.salvage+" • Food "+counts.forage+" • Water "+counts.water;
   }
 }
 
@@ -102,7 +116,7 @@ function showError(error){console.error(error);ui.errorMessage.textContent=error
 function clearError(){ui.errorMessage.hidden=true;ui.errorMessage.textContent=""}
 
 async function initialize(){
-  Object.assign(ui,{saveIndicator:document.querySelector("#saveIndicator"),turnValue:document.querySelector("#turnValue"),survivorValue:document.querySelector("#survivorValue"),foodValue:document.querySelector("#foodValue"),waterValue:document.querySelector("#waterValue"),salvageValue:document.querySelector("#salvageValue"),colonyStatus:document.querySelector("#colonyStatus"),boardMessage:document.querySelector("#boardMessage"),newGameButton:document.querySelector("#newGameButton"),loadGameButton:document.querySelector("#loadGameButton"),errorMessage:document.querySelector("#errorMessage"),statePanel:document.querySelector("#statePanel"),survivorList:document.querySelector("#survivorList"),survivorCluster:document.querySelector("#survivorCluster")});
+  Object.assign(ui,{saveIndicator:document.querySelector("#saveIndicator"),turnValue:document.querySelector("#turnValue"),survivorValue:document.querySelector("#survivorValue"),foodValue:document.querySelector("#foodValue"),waterValue:document.querySelector("#waterValue"),salvageValue:document.querySelector("#salvageValue"),assignedValue:document.querySelector("#assignedValue"),colonyStatus:document.querySelector("#colonyStatus"),boardMessage:document.querySelector("#boardMessage"),newGameButton:document.querySelector("#newGameButton"),loadGameButton:document.querySelector("#loadGameButton"),errorMessage:document.querySelector("#errorMessage"),statePanel:document.querySelector("#statePanel"),survivorList:document.querySelector("#survivorList"),assignmentSummary:document.querySelector("#assignmentSummary"),survivorCluster:document.querySelector("#survivorCluster")});
   ui.newGameButton.addEventListener("click",createColony);ui.loadGameButton.addEventListener("click",loadColony);
   try{await SaveManager.open();const existing=await SaveManager.readActiveSave();if(existing){if(existing.saveVersion===1||validateGameState(existing).ok){ui.loadGameButton.hidden=false;setSaveStatus(existing.saveVersion===1?"Local save ready to upgrade":"Local save found")}else{setSaveStatus("Save needs attention");showError(new Error(validateGameState(existing).message))}}else setSaveStatus("Ready for new colony")}catch(error){showError(error)}
   render();
