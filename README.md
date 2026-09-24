@@ -9,26 +9,31 @@ Stranded Colony is a local-first, turn-based colony survival and development gam
 - Increment 3 — Assignments and Resources — **verified**
 - Increment 4 — Authoritative Turn Resolution — **verified**
 - Increment 5 — First Improvement / Project — **verified**
-- Increment 6 — First Capability / Research Change — implemented; activation and verification required before Increment 7
+- Increment 6 — First Capability / Research Change — **verified**
+- Increment 7 — First State-Responsive Risk / Event — implemented; activation and verification required before Increment 8
 
-## Increment 6 scope
+## Increment 7 scope
 
-The first research capability is **Efficient Salvage**. It costs 12 Salvage. Once researched, every survivor assigned to Salvage Wreck recovers 5 Salvage per committed turn instead of the base 3.
+The first state-responsive event is **Shelter Wear**. It gives the existing Maintain Shelter assignment its first protective purpose.
 
-This is a capability change rather than passive production: the authoritative turn resolver reads completed research and changes the rule used for the existing Salvage Wreck assignment.
+After normal resource resolution, if Shelter Wear has never occurred and no survivor was assigned to Maintain Shelter for that turn, loose crash debris damages the emergency shelter. Emergency repairs consume up to 2 Salvage. The event is then marked resolved and will not repeat.
 
-Research completion is persisted before the UI adopts the new state. Save format remains v2 because the existing playthrough already includes the research object.
+If at least one survivor is assigned to Maintain Shelter, the event does not occur and remains eligible for a later unprotected turn. This makes the event respond to actual colony state rather than a random timer.
 
-No research tree, research points, timers, risks, events, or additional technologies are introduced in this increment.
+The consequence is resolved inside the authoritative turn path, included in the turn's Salvage delta, saved with the resulting colony state, and rendered from persisted event state. Save format remains v2 because event state fits within the existing flags area.
 
-## Increment 6 verification gate
+This increment deliberately adds one deterministic event only. It does not add random event tables, probabilities, injuries, chains, or a general event engine.
 
-1. Load the verified colony. If Salvage is below 12, work the wreck until at least 12 is available.
-2. Confirm Efficient Salvage changes to Ready to research when 12 Salvage is available.
-3. Research it. Confirm exactly 12 Salvage is deducted, the panel reports Researched, and the research button disappears.
-4. Assign exactly one survivor to Salvage Wreck and the other four to non-salvage work. Commit one turn. Salvage should increase by exactly 5.
-5. Assign two survivors to Salvage Wreck and commit another turn. Salvage should increase by exactly 10.
-6. Fully close and reopen the app, load the colony, and confirm Efficient Salvage remains researched and still changes salvage yield.
-7. After an online reload, repeat a salvage turn in Airplane Mode and confirm the capability and resulting state persist offline.
+## Increment 7 verification gate
 
-Do not begin Increment 7 until Increment 6 is activated and these checks are confirmed.
+Important: on the first turn after this update, assign at least one survivor to Maintain Shelter so the prevention case can be tested before the one-time event is allowed to occur.
+
+1. Load the verified colony and note current Salvage.
+2. Assign at least one survivor to Maintain Shelter. Commit a turn. Shelter Wear should NOT appear.
+3. Remove every survivor from Maintain Shelter. Note Salvage, then commit one turn.
+4. Shelter Wear should appear. Compared with the normal work yield for that turn, an additional 2 Salvage should be consumed (or all remaining Salvage if fewer than 2 were available). The turn result's Salvage delta should include that consequence.
+5. Commit another turn with nobody maintaining the shelter. Shelter Wear must NOT occur a second time and no second 2-Salvage event cost should be applied.
+6. Fully close and reopen the app, load the colony, and confirm the Shelter Wear event remains visible as historical state and does not repeat.
+7. After an online reload, commit another turn in Airplane Mode and confirm the event history and resulting colony state persist offline.
+
+Do not begin Increment 8 until Increment 7 is activated and these checks are confirmed.
