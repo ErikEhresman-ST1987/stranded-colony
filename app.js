@@ -146,7 +146,6 @@ function render(){
     ui.commitTurnButton.disabled=false;
   }else{ui.commitTurnButton.disabled=true;ui.turnResult.hidden=true}
   if(hasState&&p.flags.lastTurn&&!ui.turnResult.textContent){const last=p.flags.lastTurn;ui.turnResult.textContent="Last resolved: Turn "+last.turn+" • Food "+signed(last.delta.food)+" • Water "+signed(last.delta.water)+" • Salvage "+signed(last.delta.salvage);ui.turnResult.hidden=false}
-  }
 }
 
 function setSaveStatus(text){ui.saveIndicator.textContent=text}
