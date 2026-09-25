@@ -4,7 +4,29 @@ Stranded Colony is a local-first, turn-based colony survival and development gam
 
 ## Current checkpoint
 
-- Phase 2 Increment 1 — Fragile Stability & Competing Priorities — **implemented; verification required**
+- Phase 2 Increment 2 — Regional Survey & First Expertise Interpretation — **implemented; verification required**
+  - The Northern Ridge is now a visible known regional observation, not a quest marker or revealed solution.
+  - Nia Saye's geology/surveying expertise interprets the observation without claiming groundwater, a spring, or alien infrastructure.
+  - Starting regional knowledge is persisted in scenario state.
+  - Save format advances to v4 with a narrow v3 → v4 migration that preserves the existing Phase 2 colony.
+  - Offline shell cache advances for the new build.
+
+### Phase 2 Increment 2 verification
+
+1. Reload the deployed game and load the existing Phase 2 colony. It should upgrade from save v3 to v4 without starting over.
+2. Confirm turn number, resources, assignments, completed project/research state, and prior event state are unchanged after the upgrade.
+3. Confirm a Northern Ridge marker appears on the colony board and a Regional Survey panel appears below the pressure cards.
+4. Confirm the survey says vegetation is unusually dense on part of the upper slope, no visible drainage was identified, and the area was not closely surveyed.
+5. Confirm Nia Saye's interpretation says the vegetation difference is real but its cause is not yet known. The interface must not mention a spring, groundwater, alien structures, or a water objective.
+6. Fully close and reopen the app, load the colony again, and confirm the survey remains present and the footer reports save format v4.
+7. Repeat the close/reopen test in Airplane Mode after one online refresh.
+8. On iPhone/iPad, confirm the Northern Ridge marker does not obscure essential board information and the survey panel is readable without horizontal overflow.
+9. Gameplay judgment: decide whether the ridge feels like an interesting piece of evidence you may want to investigate later, rather than an instruction telling you what to do.
+
+Do not begin Phase 2 Increment 3 until this increment is verified and evaluated.
+
+
+- Phase 2 Increment 1 — Fragile Stability & Competing Priorities — **verified, played, and evaluated**
   - Phase 2 now begins with the approved six survivors.
   - The opening colony is explicitly in fragile stability.
   - Water, Food, Shelter, and Power are presented as behaviorally different pressures.
