@@ -4,6 +4,31 @@ Stranded Colony is a local-first, turn-based colony survival and development gam
 
 ## Current checkpoint
 
+- Phase 2 Increment 6 — Spring Water Line Commitment & Construction — **implemented; verification required**
+  - Increment 5 is verified, played, and evaluated.
+  - Spring Evaluated now unlocks a real project possibility rather than an automatic solution.
+  - Committing the Spring Water Line costs 15 Salvage up front.
+  - Once committed, **Build Spring Water Line** becomes a survivor assignment and requires 3 total construction work across committed turns.
+  - Construction therefore competes directly with food, water, shelter, and salvage labor.
+  - Completing construction does **not yet** activate the water-labor benefit; that capability transition is deliberately held for the next verified increment.
+  - Save format advances to v8 with v7 → v8 migration preserving the colony.
+
+### Phase 2 Increment 6 verification
+1. Load the colony and confirm v7 → v8 with all existing state preserved.
+2. After Spring Evaluated, confirm a **Spring Water Line** project panel appears.
+3. Confirm committing it requires 15 Salvage. If you lack enough, the panel should tell you how much more is needed; gathering that salvage is intended gameplay.
+4. Commit the project. Confirm 15 Salvage is spent immediately and the project remains unfinished at 0 / 3 construction work.
+5. Confirm **Build Spring Water Line** now appears in survivor assignment menus.
+6. Assign one survivor and commit a turn. Confirm normal survival rules still resolve and project status advances to 1 / 3.
+7. Construction can be accelerated by assigning multiple survivors, but each builder gives up other work that turn.
+8. Reach 3 / 3 total work. Confirm the project reports construction complete and the build assignment disappears.
+9. Confirm completion does not yet reduce water consumption or automatically reassign water workers.
+10. Close/reopen once and confirm project commitment/progress persists.
+11. Gameplay judgment: did obtaining 15 Salvage and sacrificing survivor turns make the infrastructure feel like a genuine colony commitment rather than another story click?
+
+Do not begin Increment 7 until this increment is verified, played, and evaluated.
+
+
 - Phase 2 Increment 5 — Evaluate the Spring — **implemented; verification required**
   - Increment 4 is verified, played, and evaluated.
   - After Spring Confirmed, survivors gain **Evaluate Spring** as a one-turn investigation assignment.
