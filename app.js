@@ -1,6 +1,6 @@
 "use strict";
 
-const SAVE_VERSION=3,DB_NAME="stranded-colony",DB_VERSION=1,STORE_NAME="saves",ACTIVE_SAVE_KEY="active-colony";
+const SAVE_VERSION=4,DB_NAME="stranded-colony",DB_VERSION=1,STORE_NAME="saves",ACTIVE_SAVE_KEY="active-colony";
 let gameState=null;
 const ui={};
 const WORK_OPTIONS=[["unassigned","Unassigned"],["shelter","Maintain Shelter"],["salvage","Salvage Wreck"],["forage","Forage for Food"],["water","Secure Water"]];
@@ -8,6 +8,16 @@ const TURN_RULES={foodPerSurvivor:1,waterPerSurvivor:1,forageFood:3,secureWater:
 const PROJECTS={waterCollector:{id:"water-collector",name:"Water Collector",salvageCost:9,waterPerTurn:2}};
 const RESEARCH={efficientSalvage:{id:"efficient-salvage",name:"Efficient Salvage",salvageCost:12,salvageYield:5}};
 const EVENTS={shelterWear:{id:"shelter-wear",salvageLoss:2}};
+const STARTING_REGIONAL_KNOWLEDGE={
+  northernRidge:{
+    id:"northern-ridge",
+    name:"Northern Ridge",
+    status:"Observed",
+    observation:"Vegetation appears unusually dense along part of the upper slope. No visible drainage was identified during initial reconnaissance. Area not closely surveyed.",
+    observer:"Nia Saye",
+    interpretation:"The vegetation difference is real, but the cause is not yet known."
+  }
+};
 const STARTING_SURVIVORS=[
   {id:"mara-venn",name:"Mara Venn",role:"Agriculture & Practical Systems"},
   {id:"nia-saye",name:"Nia Saye",role:"Geology & Surveying"},
@@ -29,12 +39,21 @@ function firstColonyState(base){
   return{
     saveVersion:SAVE_VERSION,
     meta:base?.meta||{id:crypto.randomUUID?crypto.randomUUID():"colony-"+Date.now(),createdAt:now,updatedAt:now},
-    scenario:{worldSeed:base?.scenario?.worldSeed||(crypto.randomUUID?crypto.randomUUID():String(Date.now())),established:{region:"Temperate Frontier",crashSite:true,sites:["emergency-shelter","wreck-salvage"]}},
+    scenario:{worldSeed:base?.scenario?.worldSeed||(crypto.randomUUID?crypto.randomUUID():String(Date.now())),established:{region:"Temperate Frontier",crashSite:true,sites:["emergency-shelter","wreck-salvage"],regionalKnowledge:structuredClone(STARTING_REGIONAL_KNOWLEDGE)}},
     playthrough:{turn:base?.playthrough?.turn??0,colony:{status:"Fragile stability"},resources:{food:24,water:24,salvage:12},survivors:Object.fromEntries(STARTING_SURVIVORS.map(s=>[s.id,{...s,status:"Ready"}])),assignments:{},projects:{},research:{},flags:{firstColonyState:true}}
   }
 }
 
-function migrateGameState(candidate){return candidate}
+function migrateGameState(candidate){
+  if(candidate?.saveVersion===3){
+    const migrated=structuredClone(candidate);
+    migrated.saveVersion=SAVE_VERSION;
+    migrated.scenario.established={...(migrated.scenario.established||{}),regionalKnowledge:structuredClone(STARTING_REGIONAL_KNOWLEDGE)};
+    migrated.meta.updatedAt=new Date().toISOString();
+    return migrated;
+  }
+  return candidate;
+}
 
 function validateGameState(candidate){
   if(!candidate||typeof candidate!=="object")return{ok:false,message:"Save data is missing or unreadable."};
@@ -49,7 +68,11 @@ function validateGameState(candidate){
 
 function createNewGameState(){return firstColonyState(null)}
 
-async function prepareSavedState(candidate){return migrateGameState(candidate)}
+async function prepareSavedState(candidate){
+  const migrated=migrateGameState(candidate);
+  if(candidate?.saveVersion===3)await SaveManager.writeActiveSave(migrated);
+  return migrated
+}
 
 async function activateState(candidate,statusText){
   const prepared=await prepareSavedState(candidate),validation=validateGameState(prepared);
@@ -177,10 +200,11 @@ function render(){
   ui.statePanel.hidden=!hasState;
   ui.projectPanel.hidden=!hasState;
   ui.researchPanel.hidden=!hasState;
-  ui.eventPanel.hidden=true;
+  ui.eventPanel.hidden=true;ui.surveyPanel.hidden=!hasState;ui.ridgeMarker.hidden=!hasState;
   ui.survivorCluster.replaceChildren();
   ui.survivorList.replaceChildren();
   if(hasState){
+    renderRegionalSurvey(gameState.scenario?.established?.regionalKnowledge);
     Object.values(p.survivors).forEach(s=>{
       const token=document.createElement("span");token.className="survivor-token";token.title=s.name;ui.survivorCluster.append(token);
       const card=document.createElement("div");card.className="survivor-card";const name=document.createElement("b"),role=document.createElement("small"),select=document.createElement("select");name.textContent=s.name;role.textContent=s.role;select.dataset.survivorId=s.id;select.setAttribute("aria-label","Assignment for "+s.name);WORK_OPTIONS.forEach(([id,label])=>{const option=document.createElement("option");option.value=id;option.textContent=label;select.append(option)});select.value=p.assignments[s.id]||"unassigned";select.addEventListener("change",changeAssignment);if(select.value!=="unassigned")card.classList.add("assigned");card.append(name,role,select);ui.survivorList.append(card)
@@ -197,6 +221,13 @@ function render(){
     const currentEvent=p.flags.lastTurn?.event;if(currentEvent?.id===EVENTS.shelterWear.id){ui.eventMessage.textContent="Turn "+p.flags.lastTurn.turn+": "+currentEvent.message;ui.eventPanel.hidden=false}
   }else{ui.commitTurnButton.disabled=true;ui.turnResult.hidden=true}
   if(hasState&&p.flags.lastTurn&&!ui.turnResult.textContent){const last=p.flags.lastTurn;ui.turnResult.textContent="Last resolved: Turn "+last.turn+" • Food "+signed(last.delta.food)+" • Water "+signed(last.delta.water)+" • Salvage "+signed(last.delta.salvage);ui.turnResult.hidden=false}
+}
+
+function renderRegionalSurvey(knowledge){
+  const ridge=knowledge?.northernRidge||STARTING_REGIONAL_KNOWLEDGE.northernRidge;
+  ui.surveyObservation.textContent=ridge.observation;
+  ui.surveyInterpretation.textContent=ridge.observer+": "+ridge.interpretation;
+  ui.ridgeMarker.querySelector("small").textContent=ridge.status+" • dense vegetation";
 }
 
 function renderPressures(p,counts){
@@ -220,9 +251,9 @@ function showError(error){console.error(error);ui.errorMessage.textContent=error
 function clearError(){ui.errorMessage.hidden=true;ui.errorMessage.textContent=""}
 
 async function initialize(){
-  Object.assign(ui,{saveIndicator:document.querySelector("#saveIndicator"),turnValue:document.querySelector("#turnValue"),survivorValue:document.querySelector("#survivorValue"),foodValue:document.querySelector("#foodValue"),waterValue:document.querySelector("#waterValue"),salvageValue:document.querySelector("#salvageValue"),assignedValue:document.querySelector("#assignedValue"),colonyStatus:document.querySelector("#colonyStatus"),boardMessage:document.querySelector("#boardMessage"),newGameButton:document.querySelector("#newGameButton"),loadGameButton:document.querySelector("#loadGameButton"),errorMessage:document.querySelector("#errorMessage"),statePanel:document.querySelector("#statePanel"),survivorList:document.querySelector("#survivorList"),assignmentSummary:document.querySelector("#assignmentSummary"),commitTurnButton:document.querySelector("#commitTurnButton"),projectPanel:document.querySelector("#projectPanel"),buildProjectButton:document.querySelector("#buildProjectButton"),projectStatus:document.querySelector("#projectStatus"),researchPanel:document.querySelector("#researchPanel"),researchButton:document.querySelector("#researchButton"),researchStatus:document.querySelector("#researchStatus"),eventPanel:document.querySelector("#eventPanel"),eventMessage:document.querySelector("#eventMessage"),turnResult:document.querySelector("#turnResult"),collectorSite:document.querySelector("#collectorSite"),survivorCluster:document.querySelector("#survivorCluster")});
+  Object.assign(ui,{saveIndicator:document.querySelector("#saveIndicator"),turnValue:document.querySelector("#turnValue"),survivorValue:document.querySelector("#survivorValue"),foodValue:document.querySelector("#foodValue"),waterValue:document.querySelector("#waterValue"),salvageValue:document.querySelector("#salvageValue"),assignedValue:document.querySelector("#assignedValue"),colonyStatus:document.querySelector("#colonyStatus"),boardMessage:document.querySelector("#boardMessage"),newGameButton:document.querySelector("#newGameButton"),loadGameButton:document.querySelector("#loadGameButton"),errorMessage:document.querySelector("#errorMessage"),statePanel:document.querySelector("#statePanel"),survivorList:document.querySelector("#survivorList"),assignmentSummary:document.querySelector("#assignmentSummary"),commitTurnButton:document.querySelector("#commitTurnButton"),projectPanel:document.querySelector("#projectPanel"),buildProjectButton:document.querySelector("#buildProjectButton"),projectStatus:document.querySelector("#projectStatus"),researchPanel:document.querySelector("#researchPanel"),researchButton:document.querySelector("#researchButton"),researchStatus:document.querySelector("#researchStatus"),eventPanel:document.querySelector("#eventPanel"),eventMessage:document.querySelector("#eventMessage"),turnResult:document.querySelector("#turnResult"),collectorSite:document.querySelector("#collectorSite"),survivorCluster:document.querySelector("#survivorCluster"),surveyPanel:document.querySelector("#surveyPanel"),surveyObservation:document.querySelector("#surveyObservation"),surveyInterpretation:document.querySelector("#surveyInterpretation"),ridgeMarker:document.querySelector("#ridgeMarker")});
   ui.newGameButton.addEventListener("click",createColony);ui.loadGameButton.addEventListener("click",loadColony);ui.commitTurnButton.addEventListener("click",commitTurn);ui.buildProjectButton.addEventListener("click",buildWaterCollector);ui.researchButton.addEventListener("click",researchEfficientSalvage);
-  try{await SaveManager.open();const existing=await SaveManager.readActiveSave();if(existing){if(validateGameState(existing).ok){ui.loadGameButton.hidden=false;setSaveStatus("Local save found")}else if(existing.saveVersion< SAVE_VERSION){setSaveStatus("Phase 2 ready");showError(new Error("Your Phase 1 test colony is preserved, but Phase 2 uses a new colony format. Choose Start New Colony when you are ready to begin Phase 2."))}else{setSaveStatus("Save needs attention");showError(new Error(validateGameState(existing).message))}}else setSaveStatus("Ready for new colony")}catch(error){showError(error)}
+  try{await SaveManager.open();const existing=await SaveManager.readActiveSave();if(existing){if(validateGameState(existing).ok||existing.saveVersion===3){ui.loadGameButton.hidden=false;setSaveStatus(existing.saveVersion===3?"Phase 2 save ready to upgrade":"Local save found")}else if(existing.saveVersion< SAVE_VERSION){setSaveStatus("Phase 2 ready");showError(new Error("Your Phase 1 test colony is preserved, but Phase 2 uses a new colony format. Choose Start New Colony when you are ready to begin Phase 2."))}else{setSaveStatus("Save needs attention");showError(new Error(validateGameState(existing).message))}}else setSaveStatus("Ready for new colony")}catch(error){showError(error)}
   render();
   if("serviceWorker"in navigator)window.addEventListener("load",()=>{navigator.serviceWorker.register("./service-worker.js").catch(error=>console.error("Service worker registration failed:",error))})
 }
