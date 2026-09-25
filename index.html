@@ -45,6 +45,13 @@
         </div>
       </section>
 
+      <section class="pressure-panel" id="pressurePanel" aria-label="Current colony pressures">
+        <div class="pressure-card" id="pressureWater"><span>WATER</span><b>Recurring labor</b><small>Survivor capacity is required to keep water moving.</small></div>
+        <div class="pressure-card" id="pressureFood"><span>FOOD</span><b>Finite runway</b><small>Crash supplies are usable, but they will not last.</small></div>
+        <div class="pressure-card" id="pressureShelter"><span>SHELTER</span><b>Improvised</b><small>Emergency protection works, but remains limited.</small></div>
+        <div class="pressure-card" id="pressurePower"><span>POWER</span><b>Capability ceiling</b><small>Emergency power supports essentials, not expansion.</small></div>
+      </section>
+
       <section class="state-panel" id="statePanel" aria-labelledby="stateTitle" hidden>
         <div><p class="eyebrow">WORK ASSIGNMENTS</p><h2 id="stateTitle">Prepare the colony</h2><p class="muted">Choose one task for each survivor. Assignments save immediately; resources change only when you commit the turn.</p></div>
         <div class="survivor-list" id="survivorList"></div>
@@ -76,7 +83,7 @@
         <p class="error-message" id="errorMessage" role="alert" hidden></p>
       </section>
     </main>
-    <footer><span>Local-first • Offline-capable</span><span id="versionLabel">Save format v2</span></footer>
+    <footer><span>Local-first • Offline-capable</span><span id="versionLabel">Save format v3</span></footer>
   </div>
   <script src="./app.js" defer></script>
 </body>
