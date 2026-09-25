@@ -89,23 +89,33 @@ function validateTurnPlan(state){
 function resolveTurn(sourceState){
   const next=structuredClone(sourceState),p=next.playthrough,plan=validateTurnPlan(next);
   if(!plan.ok)throw new Error(plan.message);
-  const survivorCount=Object.keys(p.survivors).length,counts={shelter:0,salvage:0,forage:0,water:0};
+  const before={...p.resources},survivorCount=Object.keys(p.survivors).length,counts={shelter:0,salvage:0,forage:0,water:0};
   Object.values(p.assignments).forEach(id=>{if(id in counts)counts[id]++});
+
+  // Consume
+  p.resources.food=Math.max(0,p.resources.food-survivorCount*TURN_RULES.foodPerSurvivor);
+  p.resources.water=Math.max(0,p.resources.water-survivorCount*TURN_RULES.waterPerSurvivor);
+
+  // Produce
   const collectorBuilt=Boolean(p.projects?.[PROJECTS.waterCollector.id]?.complete),collectorWater=collectorBuilt?PROJECTS.waterCollector.waterPerTurn:0;
   const efficientSalvage=Boolean(p.research?.[RESEARCH.efficientSalvage.id]?.complete),salvageYield=efficientSalvage?RESEARCH.efficientSalvage.salvageYield:TURN_RULES.salvageYield;
-  const delta={food:counts.forage*TURN_RULES.forageFood-survivorCount*TURN_RULES.foodPerSurvivor,water:counts.water*TURN_RULES.secureWater+collectorWater-survivorCount*TURN_RULES.waterPerSurvivor,salvage:counts.salvage*salvageYield};
-  p.resources.food=Math.max(0,p.resources.food+delta.food);
-  p.resources.water=Math.max(0,p.resources.water+delta.water);
-  p.resources.salvage=Math.max(0,p.resources.salvage+delta.salvage);
+  p.resources.food+=counts.forage*TURN_RULES.forageFood;
+  p.resources.water+=counts.water*TURN_RULES.secureWater+collectorWater;
+  p.resources.salvage+=counts.salvage*salvageYield;
+
+  // Resolve risks and consequences
   p.turn+=1;
   let event=null;
   const shelterWearResolved=Boolean(p.flags.events?.[EVENTS.shelterWear.id]?.resolved);
   if(!shelterWearResolved&&counts.shelter===0){
     const loss=Math.min(EVENTS.shelterWear.salvageLoss,p.resources.salvage);
-    p.resources.salvage-=loss;delta.salvage-=loss;
+    p.resources.salvage-=loss;
     p.flags.events={...(p.flags.events||{}),[EVENTS.shelterWear.id]:{resolved:true,turn:p.turn,salvageLost:loss}};
     event={id:EVENTS.shelterWear.id,title:"Shelter Wear",salvageLost:loss,message:"With no survivor maintaining the emergency shelter, loose crash debris damaged the shelter frame. Emergency repairs used "+loss+" Salvage."};
   }
+
+  // Finalize from actual before/after values so scarcity never misreports a nominal delta.
+  const delta={food:p.resources.food-before.food,water:p.resources.water-before.water,salvage:p.resources.salvage-before.salvage};
   p.flags.lastTurn={turn:p.turn,delta,counts,improvements:{waterCollector:collectorWater},capabilities:{efficientSalvage,salvageYield},event};
   next.meta.updatedAt=new Date().toISOString();
   return next
@@ -189,7 +199,7 @@ function render(){
     ui.assignmentSummary.textContent=assigned+" of 5 assigned • Shelter "+counts.shelter+" • Salvage "+counts.salvage+" • Food "+counts.forage+" • Water "+counts.water;
     ui.commitTurnButton.disabled=false;
     const project=PROJECTS.waterCollector,built=Boolean(p.projects?.[project.id]?.complete),canBuild=p.resources.salvage>=project.salvageCost;
-    ui.projectPanel.classList.toggle("complete",built);ui.buildProjectButton.hidden=built;ui.buildProjectButton.disabled=!canBuild;
+    ui.projectPanel.classList.toggle("complete",built);ui.collectorSite.hidden=!built;ui.buildProjectButton.hidden=built;ui.buildProjectButton.disabled=!canBuild;
     ui.projectStatus.textContent=built?"Built • +2 Water each turn":canBuild?"Ready to build":"Needs "+(project.salvageCost-p.resources.salvage)+" more Salvage";
     const research=RESEARCH.efficientSalvage,researched=Boolean(p.research?.[research.id]?.complete),canResearch=p.resources.salvage>=research.salvageCost;
     ui.researchPanel.classList.toggle("complete",researched);ui.researchButton.hidden=researched;ui.researchButton.disabled=!canResearch;
@@ -200,12 +210,17 @@ function render(){
 }
 
 function setSaveStatus(text){ui.saveIndicator.textContent=text}
-function setBusy(busy){ui.newGameButton.disabled=busy;ui.loadGameButton.disabled=busy;if(ui.commitTurnButton)ui.commitTurnButton.disabled=busy;if(ui.buildProjectButton&&!ui.buildProjectButton.hidden)ui.buildProjectButton.disabled=busy;if(ui.researchButton&&!ui.researchButton.hidden)ui.researchButton.disabled=busy}
+function setBusy(busy){
+  ui.newGameButton.disabled=busy;ui.loadGameButton.disabled=busy;
+  if(ui.commitTurnButton)ui.commitTurnButton.disabled=busy||!gameState;
+  if(ui.buildProjectButton&&!ui.buildProjectButton.hidden){const p=gameState?.playthrough;ui.buildProjectButton.disabled=busy||!p||p.resources.salvage<PROJECTS.waterCollector.salvageCost}
+  if(ui.researchButton&&!ui.researchButton.hidden){const p=gameState?.playthrough;ui.researchButton.disabled=busy||!p||p.resources.salvage<RESEARCH.efficientSalvage.salvageCost}
+}
 function showError(error){console.error(error);ui.errorMessage.textContent=error instanceof Error?error.message:"An unexpected local-storage error occurred.";ui.errorMessage.hidden=false;setSaveStatus("Save unavailable")}
 function clearError(){ui.errorMessage.hidden=true;ui.errorMessage.textContent=""}
 
 async function initialize(){
-  Object.assign(ui,{saveIndicator:document.querySelector("#saveIndicator"),turnValue:document.querySelector("#turnValue"),survivorValue:document.querySelector("#survivorValue"),foodValue:document.querySelector("#foodValue"),waterValue:document.querySelector("#waterValue"),salvageValue:document.querySelector("#salvageValue"),assignedValue:document.querySelector("#assignedValue"),colonyStatus:document.querySelector("#colonyStatus"),boardMessage:document.querySelector("#boardMessage"),newGameButton:document.querySelector("#newGameButton"),loadGameButton:document.querySelector("#loadGameButton"),errorMessage:document.querySelector("#errorMessage"),statePanel:document.querySelector("#statePanel"),survivorList:document.querySelector("#survivorList"),assignmentSummary:document.querySelector("#assignmentSummary"),commitTurnButton:document.querySelector("#commitTurnButton"),projectPanel:document.querySelector("#projectPanel"),buildProjectButton:document.querySelector("#buildProjectButton"),projectStatus:document.querySelector("#projectStatus"),researchPanel:document.querySelector("#researchPanel"),researchButton:document.querySelector("#researchButton"),researchStatus:document.querySelector("#researchStatus"),eventPanel:document.querySelector("#eventPanel"),eventMessage:document.querySelector("#eventMessage"),turnResult:document.querySelector("#turnResult"),survivorCluster:document.querySelector("#survivorCluster")});
+  Object.assign(ui,{saveIndicator:document.querySelector("#saveIndicator"),turnValue:document.querySelector("#turnValue"),survivorValue:document.querySelector("#survivorValue"),foodValue:document.querySelector("#foodValue"),waterValue:document.querySelector("#waterValue"),salvageValue:document.querySelector("#salvageValue"),assignedValue:document.querySelector("#assignedValue"),colonyStatus:document.querySelector("#colonyStatus"),boardMessage:document.querySelector("#boardMessage"),newGameButton:document.querySelector("#newGameButton"),loadGameButton:document.querySelector("#loadGameButton"),errorMessage:document.querySelector("#errorMessage"),statePanel:document.querySelector("#statePanel"),survivorList:document.querySelector("#survivorList"),assignmentSummary:document.querySelector("#assignmentSummary"),commitTurnButton:document.querySelector("#commitTurnButton"),projectPanel:document.querySelector("#projectPanel"),buildProjectButton:document.querySelector("#buildProjectButton"),projectStatus:document.querySelector("#projectStatus"),researchPanel:document.querySelector("#researchPanel"),researchButton:document.querySelector("#researchButton"),researchStatus:document.querySelector("#researchStatus"),eventPanel:document.querySelector("#eventPanel"),eventMessage:document.querySelector("#eventMessage"),turnResult:document.querySelector("#turnResult"),collectorSite:document.querySelector("#collectorSite"),survivorCluster:document.querySelector("#survivorCluster")});
   ui.newGameButton.addEventListener("click",createColony);ui.loadGameButton.addEventListener("click",loadColony);ui.commitTurnButton.addEventListener("click",commitTurn);ui.buildProjectButton.addEventListener("click",buildWaterCollector);ui.researchButton.addEventListener("click",researchEfficientSalvage);
   try{await SaveManager.open();const existing=await SaveManager.readActiveSave();if(existing){if(existing.saveVersion===1||validateGameState(existing).ok){ui.loadGameButton.hidden=false;setSaveStatus(existing.saveVersion===1?"Local save ready to upgrade":"Local save found")}else{setSaveStatus("Save needs attention");showError(new Error(validateGameState(existing).message))}}else setSaveStatus("Ready for new colony")}catch(error){showError(error)}
   render();
