@@ -204,7 +204,7 @@ function render(){
     const research=RESEARCH.efficientSalvage,researched=Boolean(p.research?.[research.id]?.complete),canResearch=p.resources.salvage>=research.salvageCost;
     ui.researchPanel.classList.toggle("complete",researched);ui.researchButton.hidden=researched;ui.researchButton.disabled=!canResearch;
     ui.researchStatus.textContent=researched?"Researched • Salvage workers now recover 5":canResearch?"Ready to research":"Needs "+(research.salvageCost-p.resources.salvage)+" more Salvage";
-    const shelterEvent=p.flags.events?.[EVENTS.shelterWear.id];if(shelterEvent){ui.eventMessage.textContent="Turn "+shelterEvent.turn+": With no survivor maintaining the emergency shelter, loose crash debris damaged the shelter frame. Emergency repairs used "+shelterEvent.salvageLost+" Salvage.";ui.eventPanel.hidden=false}
+    const currentEvent=p.flags.lastTurn?.event;if(currentEvent?.id===EVENTS.shelterWear.id){ui.eventMessage.textContent="Turn "+p.flags.lastTurn.turn+": "+currentEvent.message;ui.eventPanel.hidden=false}
   }else{ui.commitTurnButton.disabled=true;ui.turnResult.hidden=true}
   if(hasState&&p.flags.lastTurn&&!ui.turnResult.textContent){const last=p.flags.lastTurn;ui.turnResult.textContent="Last resolved: Turn "+last.turn+" • Food "+signed(last.delta.food)+" • Water "+signed(last.delta.water)+" • Salvage "+signed(last.delta.salvage);ui.turnResult.hidden=false}
 }
