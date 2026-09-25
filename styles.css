@@ -17,3 +17,11 @@
 .pressure-card small{margin-top:4px;color:var(--muted);line-height:1.35}
 @media(min-width:760px){.pressure-panel{grid-template-columns:repeat(4,minmax(0,1fr))}}
 @media(max-width:390px){.pressure-panel{grid-template-columns:1fr}}
+
+.ridge-marker{left:5%;top:8%;border-style:dashed;background:rgba(245,247,236,.9)}
+.survey-panel{display:grid;gap:14px;padding:18px;border:1px solid var(--line);border-radius:18px;background:var(--panel)}
+.expert-note{padding:12px 14px;border-left:4px solid #71806b;border-radius:8px;background:#eef1e9}
+.expert-note span{display:block;margin-bottom:5px;font-size:.7rem;font-weight:850;letter-spacing:.08em;color:var(--muted)}
+.expert-note p{margin:0;line-height:1.45}
+@media(min-width:760px){.survey-panel{grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);align-items:center}}
+@media(max-width:560px){.ridge-marker{left:4%;top:7%;min-width:132px}.survey-panel{font-size:.92rem}}
