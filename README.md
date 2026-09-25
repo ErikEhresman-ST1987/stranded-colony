@@ -4,6 +4,29 @@ Stranded Colony is a local-first, turn-based colony survival and development gam
 
 ## Current checkpoint
 
+- Phase 2 Increment 5 — Evaluate the Spring — **implemented; verification required**
+  - Increment 4 is verified, played, and evaluated.
+  - After Spring Confirmed, survivors gain **Evaluate Spring** as a one-turn investigation assignment.
+  - Evaluation establishes practical feasibility without constructing anything: flow is useful, elevation can reduce hauling, route is workable but rough, and infrastructure will require recovered material plus construction labor.
+  - Evaluation explicitly opens a future infrastructure commitment rather than granting an automatic solution.
+  - Save format advances to v7 with v6 → v7 migration preserving the colony.
+  - New physical script filename again avoids stale installed-PWA assets.
+
+### Phase 2 Increment 5 verification
+1. Reload online and load the colony. Confirm v6 → v7 without losing the current turn, resources, assignments, projects/research, or Spring Confirmed knowledge.
+2. Confirm **Evaluate Spring** appears as the ridge-related assignment; the completed survey/investigation options remain absent.
+3. Assign one survivor to Evaluate Spring. It must consume that survivor's turn and reveal nothing before Commit Turn.
+4. Commit. Normal colony consumption/production resolves and the result reports **Discovery: Spring Evaluated**.
+5. Confirm the regional knowledge now establishes useful flow, downhill potential, a workable-but-rough route, and the need for recovered pipe/channel material, intake work, and construction labor.
+6. Confirm no water infrastructure is built and no survivor is automatically freed from water duty.
+7. Confirm no manufactured/alien evidence appears yet.
+8. Commit another turn. Evaluation must not repeat or advance automatically.
+9. Close/reopen and check once in Airplane Mode; Spring Evaluated must persist.
+10. Gameplay judgment: does this feel like useful planning knowledge earned through scarce labor, and does it create a meaningful future commitment rather than another free story step?
+
+Do not begin Increment 6 until this increment is verified, played, and evaluated.
+
+
 - Phase 2 Increment 4 — Focused Ridge Investigation — **implemented; verification required**
   - Increment 3 is verified, played, and evaluated.
   - Once the Northern Ridge is Surveyed, the old survey assignment is replaced by **Investigate Ridge Moisture**.
