@@ -37,6 +37,7 @@
         <div class="site-marker shelter-site" aria-label="Emergency shelter site"><span class="site-icon">⌂</span><b>Emergency Shelter</b><small>Operational</small></div>
         <div class="site-marker salvage-site" aria-label="Wreck salvage site"><span class="site-icon">◇</span><b>Wreck Salvage</b><small>Accessible</small></div>
         <div class="site-marker collector-site" id="collectorSite" aria-label="Water Collector" hidden><span class="site-icon">◉</span><b>Water Collector</b><small>+2 Water / turn</small></div>
+        <div class="site-marker ridge-marker" id="ridgeMarker" aria-label="Northern Ridge observation" hidden><span class="site-icon">△</span><b>Northern Ridge</b><small>Observed • dense vegetation</small></div>
         <div class="survivor-cluster" id="survivorCluster" aria-label="Survivors at the crash site"></div>
         <div class="board-content">
           <p class="board-kicker">TEMPERATE FRONTIER</p>
@@ -50,6 +51,18 @@
         <div class="pressure-card" id="pressureFood"><span>FOOD</span><b>Finite runway</b><small>Crash supplies are usable, but they will not last.</small></div>
         <div class="pressure-card" id="pressureShelter"><span>SHELTER</span><b>Improvised</b><small>Emergency protection works, but remains limited.</small></div>
         <div class="pressure-card" id="pressurePower"><span>POWER</span><b>Capability ceiling</b><small>Emergency power supports essentials, not expansion.</small></div>
+      </section>
+
+      <section class="survey-panel" id="surveyPanel" aria-labelledby="surveyTitle" hidden>
+        <div>
+          <p class="eyebrow">REGIONAL SURVEY</p>
+          <h2 id="surveyTitle">Northern Ridge</h2>
+          <p class="muted" id="surveyObservation"></p>
+        </div>
+        <div class="expert-note">
+          <span>NIA SAYE • GEOLOGY &amp; SURVEYING</span>
+          <p id="surveyInterpretation"></p>
+        </div>
       </section>
 
       <section class="state-panel" id="statePanel" aria-labelledby="stateTitle" hidden>
@@ -83,7 +96,7 @@
         <p class="error-message" id="errorMessage" role="alert" hidden></p>
       </section>
     </main>
-    <footer><span>Local-first • Offline-capable</span><span id="versionLabel">Save format v3</span></footer>
+    <footer><span>Local-first • Offline-capable</span><span id="versionLabel">Save format v4</span></footer>
   </div>
   <script src="./app.js" defer></script>
 </body>
