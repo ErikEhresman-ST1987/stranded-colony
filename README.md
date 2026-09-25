@@ -4,6 +4,12 @@ Stranded Colony is a local-first, turn-based colony survival and development gam
 
 ## Current checkpoint
 
+### Phase 2 Increment 3 delivery correction
+- Corrected a stale PWA asset edge case observed on iPad where the v5 HTML loaded while an older cached app.js still supplied the assignment menus.
+- Versioned the Phase 2 Increment 3 CSS/JavaScript asset URLs and advanced the shell cache so **Survey Northern Ridge** is reliably delivered to installed PWAs.
+- No gameplay or save-state rules changed.
+
+
 - Phase 2 Increment 2 — Regional Survey & First Expertise Interpretation — **implemented; verification required**
   - The Northern Ridge is now a visible known regional observation, not a quest marker or revealed solution.
   - Nia Saye's geology/surveying expertise interprets the observation without claiming groundwater, a spring, or alien infrastructure.
