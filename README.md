@@ -10,30 +10,33 @@ Stranded Colony is a local-first, turn-based colony survival and development gam
 - Increment 4 — Authoritative Turn Resolution — **verified**
 - Increment 5 — First Improvement / Project — **verified**
 - Increment 6 — First Capability / Research Change — **verified**
-- Increment 7 — First State-Responsive Risk / Event — implemented; activation and verification required before Increment 8
+- Increment 7 — First State-Responsive Risk / Event — **verified**
+- Increment 8 — Playable-Slice Integration and Hardening — implemented; final slice verification required
 
-## Increment 7 scope
+## Increment 8 hardening
 
-The first state-responsive event is **Shelter Wear**. It gives the existing Maintain Shelter assignment its first protective purpose.
+No new gameplay system is added. This increment hardens the complete first playable slice.
 
-After normal resource resolution, if Shelter Wear has never occurred and no survivor was assigned to Maintain Shelter for that turn, loose crash debris damages the emergency shelter. Emergency repairs consume up to 2 Salvage. The event is then marked resolved and will not repeat.
+- Turn resolution now follows explicit Consume → Produce → Resolve Risk/Consequence → Finalize phases.
+- Turn-result deltas are calculated from actual before/after resources. If Food or Water is scarce and consumption bottoms out at zero, the displayed delta now matches the real state change.
+- Build and research controls re-evaluate their resource requirements after busy/save operations instead of being blindly re-enabled.
+- The Water Collector now appears on the colony board after construction, so the first permanent improvement visibly changes the crash site.
+- Assignment instructions now accurately state that resources change when the turn is committed.
+- Offline shell cache advances to v8.
+- Save format remains v2; no migration is required.
 
-If at least one survivor is assigned to Maintain Shelter, the event does not occur and remains eligible for a later unprotected turn. This makes the event respond to actual colony state rather than a random timer.
+## Final playable-slice verification gate
 
-The consequence is resolved inside the authoritative turn path, included in the turn's Salvage delta, saved with the resulting colony state, and rendered from persisted event state. Save format remains v2 because event state fits within the existing flags area.
+This is the mandatory first major gameplay checkpoint. Stop features and test the complete slice.
 
-This increment deliberately adds one deterministic event only. It does not add random event tables, probabilities, injuries, chains, or a general event engine.
+1. **Load and readability:** Open the deployed game on the primary mobile device. Load the existing colony. Confirm vitals, board, assignment controls, project/research state, and event history are readable without overflow or precision tapping.
+2. **Visible improvement:** Confirm a previously built Water Collector is visible on the board and its project panel still reports Built.
+3. **Deterministic turn:** Note Food, Water, and Salvage. Commit a turn with known assignments and verify the resulting values match the existing rules: 1 Food and 1 Water consumed per survivor; +3 Food per forage worker; +3 Water per water worker; +2 Water from the built collector; Salvage +5 per salvage worker when Efficient Salvage is researched.
+4. **Actual-delta reporting:** Confirm the turn-result Food/Water/Salvage deltas exactly equal the visible before/after resource changes.
+5. **Persistence:** Change at least one assignment, commit a turn, fully close the app, reopen it, and load the colony. Confirm assignments, resources, turn number, Water Collector, Efficient Salvage, and Shelter Wear history all persist.
+6. **Offline:** After one online reload, enter Airplane Mode, reopen/load, change an assignment, commit a turn, fully close/reopen again, and confirm the new state persisted locally.
+7. **Control-state regression:** If Salvage is below an uncompleted action's cost in a fresh colony, its Build/Research button must remain disabled after loading or committing a turn; it should become available only when enough Salvage exists.
+8. **New-colony recovery check:** Only if you are comfortable replacing the current test colony, create a new colony and verify Turn 0 / 5 survivors / Food 18 / Water 20 / Salvage 12 appear correctly and the board starts without a Water Collector. If you want to preserve the current colony, skip this destructive check.
+9. **Playable-slice judgment:** Play several consecutive turns. Note any confusing decision, awkward mobile interaction, unreadable visual state, or behavior that feels inconsistent even if technically correct.
 
-## Increment 7 verification gate
-
-Important: on the first turn after this update, assign at least one survivor to Maintain Shelter so the prevention case can be tested before the one-time event is allowed to occur.
-
-1. Load the verified colony and note current Salvage.
-2. Assign at least one survivor to Maintain Shelter. Commit a turn. Shelter Wear should NOT appear.
-3. Remove every survivor from Maintain Shelter. Note Salvage, then commit one turn.
-4. Shelter Wear should appear. Compared with the normal work yield for that turn, an additional 2 Salvage should be consumed (or all remaining Salvage if fewer than 2 were available). The turn result's Salvage delta should include that consequence.
-5. Commit another turn with nobody maintaining the shelter. Shelter Wear must NOT occur a second time and no second 2-Salvage event cost should be applied.
-6. Fully close and reopen the app, load the colony, and confirm the Shelter Wear event remains visible as historical state and does not repeat.
-7. After an online reload, commit another turn in Airplane Mode and confirm the event history and resulting colony state persist offline.
-
-Do not begin Increment 8 until Increment 7 is activated and these checks are confirmed.
+Do not begin new feature development after this gate. Once Increment 8 is verified, evaluate what the first playable slice demonstrates before planning the next phase.
