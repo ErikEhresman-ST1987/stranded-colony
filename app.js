@@ -1,9 +1,9 @@
 "use strict";
 
-const SAVE_VERSION=4,DB_NAME="stranded-colony",DB_VERSION=1,STORE_NAME="saves",ACTIVE_SAVE_KEY="active-colony";
+const SAVE_VERSION=5,DB_NAME="stranded-colony",DB_VERSION=1,STORE_NAME="saves",ACTIVE_SAVE_KEY="active-colony";
 let gameState=null;
 const ui={};
-const WORK_OPTIONS=[["unassigned","Unassigned"],["shelter","Maintain Shelter"],["salvage","Salvage Wreck"],["forage","Forage for Food"],["water","Secure Water"]];
+const WORK_OPTIONS=[["unassigned","Unassigned"],["shelter","Maintain Shelter"],["salvage","Salvage Wreck"],["forage","Forage for Food"],["water","Secure Water"],["survey-ridge","Survey Northern Ridge"]];
 const TURN_RULES={foodPerSurvivor:1,waterPerSurvivor:1,forageFood:3,secureWater:3,salvageYield:3};
 const PROJECTS={waterCollector:{id:"water-collector",name:"Water Collector",salvageCost:9,waterPerTurn:2}};
 const RESEARCH={efficientSalvage:{id:"efficient-salvage",name:"Efficient Salvage",salvageCost:12,salvageYield:5}};
@@ -45,7 +45,7 @@ function firstColonyState(base){
 }
 
 function migrateGameState(candidate){
-  if(candidate?.saveVersion===3){
+  if(candidate?.saveVersion===3||candidate?.saveVersion===4){
     const migrated=structuredClone(candidate);
     migrated.saveVersion=SAVE_VERSION;
     migrated.scenario.established={...(migrated.scenario.established||{}),regionalKnowledge:structuredClone(STARTING_REGIONAL_KNOWLEDGE)};
@@ -70,7 +70,7 @@ function createNewGameState(){return firstColonyState(null)}
 
 async function prepareSavedState(candidate){
   const migrated=migrateGameState(candidate);
-  if(candidate?.saveVersion===3)await SaveManager.writeActiveSave(migrated);
+  if(candidate?.saveVersion===3||candidate?.saveVersion===4)await SaveManager.writeActiveSave(migrated);
   return migrated
 }
 
@@ -102,7 +102,7 @@ function validateTurnPlan(state){
 function resolveTurn(sourceState){
   const next=structuredClone(sourceState),p=next.playthrough,plan=validateTurnPlan(next);
   if(!plan.ok)throw new Error(plan.message);
-  const before={...p.resources},survivorCount=Object.keys(p.survivors).length,counts={shelter:0,salvage:0,forage:0,water:0};
+  const before={...p.resources},survivorCount=Object.keys(p.survivors).length,counts={shelter:0,salvage:0,forage:0,water:0,"survey-ridge":0};
   Object.values(p.assignments).forEach(id=>{if(id in counts)counts[id]++});
 
   // Consume
@@ -115,6 +115,20 @@ function resolveTurn(sourceState){
   p.resources.food+=counts.forage*TURN_RULES.forageFood;
   p.resources.water+=counts.water*TURN_RULES.secureWater+collectorWater;
   p.resources.salvage+=counts.salvage*salvageYield;
+
+  // Progress knowledge through committed survivor capacity.
+  let knowledgeUpdate=null;
+  const ridge=p.scenario?.established?.regionalKnowledge?.northernRidge||next.scenario?.established?.regionalKnowledge?.northernRidge;
+  if(counts["survey-ridge"]>0&&next.scenario?.established?.regionalKnowledge?.northernRidge){
+    const r=next.scenario.established.regionalKnowledge.northernRidge;
+    if(r.status==="Observed"){
+      r.status="Surveyed";
+      r.observation="The dense vegetation follows a narrow band across the upper slope. The ground there is cooler and noticeably damp beneath the surface, though no open water or visible drainage has been found.";
+      r.interpretation="The pattern is consistent with a local water source or unusually persistent subsurface moisture. It is worth investigating, but the survey does not establish the cause.";
+      r.surveyedTurn=p.turn+1;
+      knowledgeUpdate={title:"Northern Ridge Survey",message:"A closer survey found cooler, damp ground beneath the dense vegetation. The cause remains unconfirmed."};
+    }
+  }
 
   // Resolve risks and consequences
   p.turn+=1;
@@ -129,7 +143,7 @@ function resolveTurn(sourceState){
 
   // Finalize from actual before/after values so scarcity never misreports a nominal delta.
   const delta={food:p.resources.food-before.food,water:p.resources.water-before.water,salvage:p.resources.salvage-before.salvage};
-  p.flags.lastTurn={turn:p.turn,delta,counts,improvements:{waterCollector:collectorWater},capabilities:{efficientSalvage,salvageYield},event};
+  p.flags.lastTurn={turn:p.turn,delta,counts,knowledgeUpdate,improvements:{waterCollector:collectorWater},capabilities:{efficientSalvage,salvageYield},event};
   next.meta.updatedAt=new Date().toISOString();
   return next
 }
@@ -142,7 +156,7 @@ async function commitTurn(){
     await SaveManager.writeActiveSave(next);
     gameState=next;render();
     const last=gameState.playthrough.flags.lastTurn;
-    ui.turnResult.textContent="Turn "+last.turn+" resolved • Food "+signed(last.delta.food)+" • Water "+signed(last.delta.water)+" • Salvage "+signed(last.delta.salvage)+(last.event?" • Event: "+last.event.title:"");
+    ui.turnResult.textContent="Turn "+last.turn+" resolved • Food "+signed(last.delta.food)+" • Water "+signed(last.delta.water)+" • Salvage "+signed(last.delta.salvage)+(last.event?" • Event: "+last.event.title:"")+(last.knowledgeUpdate?" • Discovery: "+last.knowledgeUpdate.title:"");
     ui.turnResult.hidden=false;setSaveStatus("Turn saved")
   }catch(error){showError(error)}finally{setBusy(false);ui.commitTurnButton.disabled=false}
 }
@@ -209,8 +223,8 @@ function render(){
       const token=document.createElement("span");token.className="survivor-token";token.title=s.name;ui.survivorCluster.append(token);
       const card=document.createElement("div");card.className="survivor-card";const name=document.createElement("b"),role=document.createElement("small"),select=document.createElement("select");name.textContent=s.name;role.textContent=s.role;select.dataset.survivorId=s.id;select.setAttribute("aria-label","Assignment for "+s.name);WORK_OPTIONS.forEach(([id,label])=>{const option=document.createElement("option");option.value=id;option.textContent=label;select.append(option)});select.value=p.assignments[s.id]||"unassigned";select.addEventListener("change",changeAssignment);if(select.value!=="unassigned")card.classList.add("assigned");card.append(name,role,select);ui.survivorList.append(card)
     });
-    const counts={shelter:0,salvage:0,forage:0,water:0};Object.values(p.assignments).forEach(id=>{if(id in counts)counts[id]++});
-    ui.assignmentSummary.textContent=assigned+" of "+Object.keys(p.survivors).length+" assigned • Shelter "+counts.shelter+" • Salvage "+counts.salvage+" • Food "+counts.forage+" • Water "+counts.water; renderPressures(p,counts);
+    const counts={shelter:0,salvage:0,forage:0,water:0,"survey-ridge":0};Object.values(p.assignments).forEach(id=>{if(id in counts)counts[id]++});
+    ui.assignmentSummary.textContent=assigned+" of "+Object.keys(p.survivors).length+" assigned • Shelter "+counts.shelter+" • Salvage "+counts.salvage+" • Food "+counts.forage+" • Water "+counts.water+" • Ridge "+counts["survey-ridge"]; renderPressures(p,counts);
     ui.commitTurnButton.disabled=false;
     const project=PROJECTS.waterCollector,built=Boolean(p.projects?.[project.id]?.complete),canBuild=p.resources.salvage>=project.salvageCost;
     ui.projectPanel.classList.toggle("complete",built);ui.collectorSite.hidden=!built;ui.buildProjectButton.hidden=built;ui.buildProjectButton.disabled=!canBuild;
@@ -227,7 +241,7 @@ function renderRegionalSurvey(knowledge){
   const ridge=knowledge?.northernRidge||STARTING_REGIONAL_KNOWLEDGE.northernRidge;
   ui.surveyObservation.textContent=ridge.observation;
   ui.surveyInterpretation.textContent=ridge.observer+": "+ridge.interpretation;
-  ui.ridgeMarker.querySelector("small").textContent=ridge.status+" • dense vegetation";
+  ui.ridgeMarker.querySelector("small").textContent=ridge.status+(ridge.status==="Surveyed"?" • damp ground":" • dense vegetation");
 }
 
 function renderPressures(p,counts){
@@ -253,7 +267,7 @@ function clearError(){ui.errorMessage.hidden=true;ui.errorMessage.textContent=""
 async function initialize(){
   Object.assign(ui,{saveIndicator:document.querySelector("#saveIndicator"),turnValue:document.querySelector("#turnValue"),survivorValue:document.querySelector("#survivorValue"),foodValue:document.querySelector("#foodValue"),waterValue:document.querySelector("#waterValue"),salvageValue:document.querySelector("#salvageValue"),assignedValue:document.querySelector("#assignedValue"),colonyStatus:document.querySelector("#colonyStatus"),boardMessage:document.querySelector("#boardMessage"),newGameButton:document.querySelector("#newGameButton"),loadGameButton:document.querySelector("#loadGameButton"),errorMessage:document.querySelector("#errorMessage"),statePanel:document.querySelector("#statePanel"),survivorList:document.querySelector("#survivorList"),assignmentSummary:document.querySelector("#assignmentSummary"),commitTurnButton:document.querySelector("#commitTurnButton"),projectPanel:document.querySelector("#projectPanel"),buildProjectButton:document.querySelector("#buildProjectButton"),projectStatus:document.querySelector("#projectStatus"),researchPanel:document.querySelector("#researchPanel"),researchButton:document.querySelector("#researchButton"),researchStatus:document.querySelector("#researchStatus"),eventPanel:document.querySelector("#eventPanel"),eventMessage:document.querySelector("#eventMessage"),turnResult:document.querySelector("#turnResult"),collectorSite:document.querySelector("#collectorSite"),survivorCluster:document.querySelector("#survivorCluster"),surveyPanel:document.querySelector("#surveyPanel"),surveyObservation:document.querySelector("#surveyObservation"),surveyInterpretation:document.querySelector("#surveyInterpretation"),ridgeMarker:document.querySelector("#ridgeMarker")});
   ui.newGameButton.addEventListener("click",createColony);ui.loadGameButton.addEventListener("click",loadColony);ui.commitTurnButton.addEventListener("click",commitTurn);ui.buildProjectButton.addEventListener("click",buildWaterCollector);ui.researchButton.addEventListener("click",researchEfficientSalvage);
-  try{await SaveManager.open();const existing=await SaveManager.readActiveSave();if(existing){if(validateGameState(existing).ok||existing.saveVersion===3){ui.loadGameButton.hidden=false;setSaveStatus(existing.saveVersion===3?"Phase 2 save ready to upgrade":"Local save found")}else if(existing.saveVersion< SAVE_VERSION){setSaveStatus("Phase 2 ready");showError(new Error("Your Phase 1 test colony is preserved, but Phase 2 uses a new colony format. Choose Start New Colony when you are ready to begin Phase 2."))}else{setSaveStatus("Save needs attention");showError(new Error(validateGameState(existing).message))}}else setSaveStatus("Ready for new colony")}catch(error){showError(error)}
+  try{await SaveManager.open();const existing=await SaveManager.readActiveSave();if(existing){if(validateGameState(existing).ok||existing.saveVersion===3||existing.saveVersion===4){ui.loadGameButton.hidden=false;setSaveStatus(existing.saveVersion<SAVE_VERSION?"Phase 2 save ready to upgrade":"Local save found")}else if(existing.saveVersion< SAVE_VERSION){setSaveStatus("Phase 2 ready");showError(new Error("Your Phase 1 test colony is preserved, but Phase 2 uses a new colony format. Choose Start New Colony when you are ready to begin Phase 2."))}else{setSaveStatus("Save needs attention");showError(new Error(validateGameState(existing).message))}}else setSaveStatus("Ready for new colony")}catch(error){showError(error)}
   render();
   if("serviceWorker"in navigator)window.addEventListener("load",()=>{navigator.serviceWorker.register("./service-worker.js").catch(error=>console.error("Service worker registration failed:",error))})
 }
