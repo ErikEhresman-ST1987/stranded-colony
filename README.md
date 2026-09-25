@@ -4,6 +4,32 @@ Stranded Colony is a local-first, turn-based colony survival and development gam
 
 ## Current checkpoint
 
+- Phase 2 Increment 4 — Focused Ridge Investigation — **implemented; verification required**
+  - Increment 3 is verified, played, and evaluated.
+  - Once the Northern Ridge is Surveyed, the old survey assignment is replaced by **Investigate Ridge Moisture**.
+  - Committing a survivor to that focused investigation can confirm the small spring above the colony.
+  - Discovery records the spring as a persistent world fact and notes its elevation/steady flow, but explicitly does not solve water.
+  - The next problem remains evaluation: safety, flow, route, materials, labor, and infrastructure.
+  - Save format advances to v6 with v5 → v6 migration preserving the colony.
+  - A new physical script filename is used again to avoid the iPad PWA stale-script problem.
+
+### Phase 2 Increment 4 verification
+
+1. Reload online and load the existing colony. Confirm v5 upgrades to v6 without losing turn, resources, assignments, Water Collector, Efficient Salvage, or ridge knowledge.
+2. Because the ridge is already Surveyed, assignment menus should no longer show **Survey Northern Ridge**; they should show **Investigate Ridge Moisture**.
+3. Assign exactly one survivor to Investigate Ridge Moisture. Confirm this consumes that survivor's turn and the summary reports Ridge 1.
+4. Before committing, the spring must not be revealed.
+5. Commit the turn. Normal resource rules resolve, and the result should report **Discovery: Spring Confirmed**.
+6. Confirm the Regional Survey now says a small clear spring emerges from fractured rock above the colony, roughly 34 meters higher, with apparently steady flow.
+7. Confirm the interpretation explicitly says discovery is not a solution: flow, safety, route, materials, and labor still require evaluation.
+8. Confirm there is still no engineered material, alien structure, ancient civilization, or automatic gravity-water project.
+9. Commit another turn. The spring discovery must not fire again or advance automatically.
+10. Close/reopen, including Airplane Mode after one online refresh, and confirm the confirmed spring persists.
+11. Gameplay judgment: did choosing to spend scarce survivor capacity to follow the evidence feel earned, and does finding the spring create a new practical question rather than simply awarding a solution?
+
+Do not begin Increment 5 until this increment is verified, played, and evaluated.
+
+
 ### Phase 2 Increment 3 delivery correction — second pass
 - iPad PWA still served the previous assignment JavaScript despite the query-string cache bust. The screenshot confirmed the updated v5 HTML while the dropdown still had the old five choices.
 - The Increment 3 application script now uses a new physical filename, `app-v5.js`, so it cannot collide with an older cached `app.js`.
