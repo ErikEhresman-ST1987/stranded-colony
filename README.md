@@ -4,6 +4,30 @@ Stranded Colony is a local-first, turn-based colony survival and development gam
 
 ## Current checkpoint
 
+- Phase 2 Increment 1 — Fragile Stability & Competing Priorities — **implemented; verification required**
+  - Phase 2 now begins with the approved six survivors.
+  - The opening colony is explicitly in fragile stability.
+  - Water, Food, Shelter, and Power are presented as behaviorally different pressures.
+  - Water is communicated as recurring survivor-capacity pressure rather than merely a stockpile.
+  - Save format advances to v3. Phase 1 test saves are preserved but are not silently rewritten into the new six-survivor Phase 2 colony.
+  - Offline shell cache advances for the Phase 2 build.
+
+### Phase 2 Increment 1 verification
+
+1. Open the deployed game. If a Phase 1 save exists, confirm it is identified as preserved and that the game asks you to start a new Phase 2 colony rather than silently converting it.
+2. Start a new colony and confirm there are exactly six survivors: Mara Venn, Nia Saye, Elena Sato, Kei Arun, Tomas Vale, and Jonah Reed.
+3. Confirm the board says the colony is in fragile stability and asks you to decide what to make reliable first.
+4. Confirm four pressure cards are visible: Water, Food, Shelter, and Power. Water should describe labor commitment; Food should describe finite runway; Shelter should respond to maintenance assignment; Power should communicate a capability ceiling.
+5. Change assignments and confirm the Water and Shelter pressure cards respond immediately.
+6. Commit a turn and verify six Food and six Water are consumed before assigned production is added.
+7. Fully close and reopen the app, load the colony, and confirm the six survivors, assignments, resources, turn number, projects/research, and pressure presentation persist correctly.
+8. On iPhone/iPad, confirm the pressure cards and survivor assignment controls do not overflow and remain comfortable to tap.
+9. Play several turns and judge whether Water, Food, Shelter, and Power feel like understandable competing concerns. Note any pressure that feels fake, confusing, or obviously dominant.
+
+Do not begin Phase 2 Increment 2 until this increment is verified and played.
+
+## Phase 1 checkpoint
+
 - Increment 1 — Application Shell and Persistence Foundation — **verified**
 - Increment 2 — First Colony State and Visible Board — **verified**
 - Increment 3 — Assignments and Resources — **verified**
