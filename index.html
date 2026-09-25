@@ -66,7 +66,7 @@
       </section>
 
       <section class="state-panel" id="statePanel" aria-labelledby="stateTitle" hidden>
-        <div><p class="eyebrow">WORK ASSIGNMENTS</p><h2 id="stateTitle">Prepare the colony</h2><p class="muted">Choose one task for each survivor. Assignments save immediately; resources change only when you commit the turn.</p></div>
+        <div><p class="eyebrow">WORK ASSIGNMENTS</p><h2 id="stateTitle">Prepare the colony</h2><p class="muted">Choose one task for each survivor. Colony work produces resources; investigation uses that survivor’s turn to learn more. Assignments save immediately and resolve when you commit the turn.</p></div>
         <div class="survivor-list" id="survivorList"></div>
         <p class="assignment-summary" id="assignmentSummary"></p>
         <div class="turn-actions"><button class="primary" id="commitTurnButton" type="button">Commit Turn</button><small>Assignments resolve once, then the new colony state is saved.</small></div>
@@ -96,7 +96,7 @@
         <p class="error-message" id="errorMessage" role="alert" hidden></p>
       </section>
     </main>
-    <footer><span>Local-first • Offline-capable</span><span id="versionLabel">Save format v4</span></footer>
+    <footer><span>Local-first • Offline-capable</span><span id="versionLabel">Save format v5</span></footer>
   </div>
   <script src="./app.js" defer></script>
 </body>
