@@ -25,3 +25,5 @@
 .expert-note p{margin:0;line-height:1.45}
 @media(min-width:760px){.survey-panel{grid-template-columns:minmax(0,1.35fr) minmax(260px,.65fr);align-items:center}}
 @media(max-width:560px){.ridge-marker{left:4%;top:7%;min-width:132px}.survey-panel{font-size:.92rem}}
+
+.spring-project{border-color:#8aa08d;background:linear-gradient(180deg,#f7faf5,#f0f5ed)}
