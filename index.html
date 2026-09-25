@@ -36,6 +36,7 @@
         </div>
         <div class="site-marker shelter-site" aria-label="Emergency shelter site"><span class="site-icon">⌂</span><b>Emergency Shelter</b><small>Operational</small></div>
         <div class="site-marker salvage-site" aria-label="Wreck salvage site"><span class="site-icon">◇</span><b>Wreck Salvage</b><small>Accessible</small></div>
+        <div class="site-marker collector-site" id="collectorSite" aria-label="Water Collector" hidden><span class="site-icon">◉</span><b>Water Collector</b><small>+2 Water / turn</small></div>
         <div class="survivor-cluster" id="survivorCluster" aria-label="Survivors at the crash site"></div>
         <div class="board-content">
           <p class="board-kicker">TEMPERATE FRONTIER</p>
@@ -45,7 +46,7 @@
       </section>
 
       <section class="state-panel" id="statePanel" aria-labelledby="stateTitle" hidden>
-        <div><p class="eyebrow">WORK ASSIGNMENTS</p><h2 id="stateTitle">Prepare the colony</h2><p class="muted">Choose one task for each survivor. Assignments save immediately; resources do not change yet.</p></div>
+        <div><p class="eyebrow">WORK ASSIGNMENTS</p><h2 id="stateTitle">Prepare the colony</h2><p class="muted">Choose one task for each survivor. Assignments save immediately; resources change only when you commit the turn.</p></div>
         <div class="survivor-list" id="survivorList"></div>
         <p class="assignment-summary" id="assignmentSummary"></p>
         <div class="turn-actions"><button class="primary" id="commitTurnButton" type="button">Commit Turn</button><small>Assignments resolve once, then the new colony state is saved.</small></div>
