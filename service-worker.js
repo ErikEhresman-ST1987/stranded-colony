@@ -1,4 +1,4 @@
-const CACHE_NAME="stranded-colony-shell-v8";
+const CACHE_NAME="stranded-colony-shell-v8-1";
 const APP_SHELL=["./","./index.html","./styles.css","./app.js","./manifest.json","./icon.svg"];
 self.addEventListener("install",event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)))});
 self.addEventListener("activate",event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith("stranded-colony-shell-")&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
