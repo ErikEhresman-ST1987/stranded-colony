@@ -4,6 +4,11 @@ Stranded Colony is a local-first, turn-based colony survival and development gam
 
 ## Current checkpoint
 
+### Phase 2 Increment 3 delivery correction — second pass
+- iPad PWA still served the previous assignment JavaScript despite the query-string cache bust. The screenshot confirmed the updated v5 HTML while the dropdown still had the old five choices.
+- The Increment 3 application script now uses a new physical filename, `app-v5.js`, so it cannot collide with an older cached `app.js`.
+- No gameplay or save-state rules changed.
+
 ### Phase 2 Increment 3 delivery correction
 - Corrected a stale PWA asset edge case observed on iPad where the v5 HTML loaded while an older cached app.js still supplied the assignment menus.
 - Versioned the Phase 2 Increment 3 CSS/JavaScript asset URLs and advanced the shell cache so **Survey Northern Ridge** is reliably delivered to installed PWAs.
