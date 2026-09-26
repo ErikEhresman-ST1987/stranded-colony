@@ -4,6 +4,30 @@ Stranded Colony is a local-first, turn-based colony survival and development gam
 
 ## Current checkpoint
 
+- Phase 2 Increment 8 — Open Competing Priorities — **implemented; verification required**
+  - Increment 7 is verified by play: reliable spring water removes hauling labor and returns survivor capacity to the player.
+  - After the completed water line, three optional one-turn assessments become available simultaneously: **Assess Food Sources**, **Assess Power Systems**, and **Assess Shelter Upgrade**.
+  - These are deliberately parallel rather than sequential. The player may pursue any, several, or none, and may continue normal colony work instead.
+  - Each assessment consumes survivor capacity and then disappears once completed.
+  - Completed assessments accumulate in a **Colony Opportunities** panel; one does not lock or auto-trigger the others.
+  - This increment establishes branching agency without prematurely building full food, power, or shelter solution arcs.
+  - Save format advances to v10 with v9 → v10 migration preserving existing world/story/project state.
+
+### Phase 2 Increment 8 verification
+1. Load the v9 colony and confirm v10 preserves the completed spring line, ridge knowledge, resources, research, projects, turn, and assignments.
+2. Confirm **Secure Water** remains absent.
+3. Confirm survivor menus now offer all three choices at the same time: Assess Food Sources, Assess Power Systems, Assess Shelter Upgrade.
+4. Choose only one assessment and commit. Confirm the other two remain available afterward.
+5. Confirm the chosen assessment disappears and its result appears in **Colony Opportunities**.
+6. Confirm normal food/salvage/shelter rules still resolve; the assessment costs that survivor's turn.
+7. On a later turn, choose a different assessment. Confirm both completed opportunity summaries remain visible.
+8. Confirm there is no forced order and no automatic next assessment.
+9. Close/reopen once and confirm completed assessments persist.
+10. Gameplay judgment: after the guided water arc, does this feel like the game has opened and you are deciding what deserves attention next?
+
+Do not begin Increment 9 until this increment is verified, played, and evaluated.
+
+
 - Phase 2 Increment 7 — Reliable Water Capability — **implemented; verification required**
   - Increment 6 is verified, played, and evaluated.
   - A completed Spring Water Line now removes the colony's recurring base water-consumption burden.
