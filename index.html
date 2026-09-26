@@ -8,7 +8,7 @@
   <title>Stranded Colony</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css?v=17b">
+  <link rel="stylesheet" href="./styles.css?v=18">
 </head>
 <body>
   <div class="app-shell">
@@ -35,8 +35,11 @@
           <h2 id="boardTitle">Crash Site</h2>
           <p id="boardMessage">Create or load a colony to reveal the first colony state.</p>
         </div>
-        <div id="worldContext" class="world-context" role="status" aria-live="polite">
-          <b>Crash Site</b><span>Loading graphical colony view…</span>
+        <div id="worldContext" class="world-context" role="region" aria-live="polite" aria-label="Selected colony location">
+          <b id="worldContextTitle">Crash Site</b>
+          <span id="worldContextBody">Loading graphical colony view…</span>
+          <small id="worldContextStatus"></small>
+          <div id="worldContextAction"></div>
         </div>
         <div id="springLineVisual" hidden aria-hidden="true"></div>
         <div id="collectorSite" hidden aria-hidden="true"></div>
@@ -96,6 +99,8 @@
         <div class="project-action"><button class="secondary" id="auxPowerButton" type="button">Commit Project • 10 Salvage</button><small id="auxPowerStatus">Not committed</small></div>
       </section>
 
+      <section class="project-panel" id="shelterProjectPanel" hidden aria-hidden="true"></section>
+
       <section class="research-panel" id="researchPanel" aria-labelledby="researchTitle" hidden>
         <div><p class="eyebrow">FIRST CAPABILITY</p><h2 id="researchTitle">Efficient Salvage</h2><p class="muted">Spend 12 Salvage to develop safer recovery methods and better material sorting. Once researched, each survivor assigned to Salvage Wreck recovers 5 Salvage per turn instead of 3.</p></div>
         <div class="research-action"><button class="secondary" id="researchButton" type="button">Research • 12 Salvage</button><small id="researchStatus">Not researched</small></div>
@@ -114,10 +119,10 @@
         <p class="error-message" id="errorMessage" role="alert" hidden></p>
       </section>
     </main>
-    <footer><span>Local-first • Offline-capable</span><span id="versionLabel">Save format v10 • Pixi Colony 15 • Gameplay 17b</span></footer>
+    <footer><span>Local-first • Offline-capable</span><span id="versionLabel">Save format v10 • Colony Interface 18 • Gameplay 17b</span></footer>
   </div>
   <script src="./vendor/pixi.min.js" defer></script>
   <script src="./js/rendering/colony-board.js" defer></script>
-  <script src="./app-v10g.js" defer></script>
+  <script src="./app-v10h.js" defer></script>
 </body>
 </html>
