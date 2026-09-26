@@ -4,6 +4,29 @@ Stranded Colony is a local-first, turn-based colony survival and development gam
 
 ## Current checkpoint
 
+- Phase 2 Increment 9 — Colony Board Visual Foundation — **implemented; verification required**
+  - Increment 8 is verified, played, and evaluated.
+  - First production-facing visual pass now follows the approved Visual Discovery direction: fixed elevated board, temperate alien frontier, persistent wreck anchor, natural terrain, readable colony structures, restrained illustrated sci-fi feel.
+  - Replaced the sparse geometric board treatment with layered ridge terrain, vegetation, rocks, a more detailed wreck, and a visible emergency shelter.
+  - The completed Spring Water Line now appears physically on the colony board as a spring source, routed line, and receiving tank.
+  - Existing semantic site markers remain for clarity; visual information does not rely on decoration alone.
+  - No gameplay or save rules changed. Save format remains v10.
+  - Uses a fresh script/cache asset path for reliable PWA testing.
+
+### Phase 2 Increment 9 verification
+1. Confirm save format remains v10 and the existing colony loads unchanged.
+2. Confirm the board now reads as a place rather than a flat placeholder: ridge, vegetation, rocks, wreck, and shelter should all be visually distinct.
+3. Confirm the wreck remains the dominant crash-site anchor without covering interactive/status information.
+4. Confirm the completed Spring Water Line is visibly represented on the board.
+5. Confirm Northern Ridge, Shelter, Salvage, and Water Collector labels remain readable.
+6. Check iPad and, when convenient, iPhone: no board overflow, clipped controls, or unusably small text.
+7. Confirm assignment controls and Commit Turn remain unaffected.
+8. Close/reopen and airplane-mode test once; this is a visual-only increment but must not regress the offline shell.
+9. Visual judgment: does this finally feel like the beginning of an illustrated colony game rather than a functional prototype, while remaining clear enough to manage?
+
+Do not begin Increment 10 until this visual increment is verified and evaluated.
+
+
 ### Increment 8 corrective patch
 - Fixed the render-side assessment counters that caused the assignment summary to display **Assess NaN**.
 - No gameplay, save-format, opportunity, or assessment rules changed.
