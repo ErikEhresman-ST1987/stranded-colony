@@ -8,7 +8,7 @@
   <title>Stranded Colony</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css?v=5">
+  <link rel="stylesheet" href="./styles.css?v=6">
 </head>
 <body>
   <div class="app-shell">
@@ -29,11 +29,18 @@
       </section>
 
       <section class="board-shell" aria-labelledby="boardTitle">
+        <div class="sky-haze" aria-hidden="true"></div>
+        <div class="ridge-landform" aria-hidden="true"><span></span></div>
         <div class="terrain terrain-a" aria-hidden="true"></div>
         <div class="terrain terrain-b" aria-hidden="true"></div>
+        <div class="tree-grove grove-a" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="tree-grove grove-b" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="rock-field" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         <div class="ship-wreck" aria-hidden="true">
-          <span class="ship-tail"></span><span class="ship-body"></span><span class="ship-break"></span>
+          <span class="ship-tail"></span><span class="ship-body"></span><span class="ship-cockpit"></span><span class="ship-panel p1"></span><span class="ship-panel p2"></span><span class="ship-scar s1"></span><span class="ship-scar s2"></span><span class="ship-break"></span>
         </div>
+        <div class="shelter-visual" aria-hidden="true"><span class="shelter-roof"></span><span class="shelter-door"></span><span class="shelter-crate c1"></span><span class="shelter-crate c2"></span></div>
+        <div class="spring-line-visual" id="springLineVisual" aria-hidden="true" hidden><span class="spring-source"></span><span class="pipe pipe-a"></span><span class="pipe pipe-b"></span><span class="pipe pipe-c"></span><span class="tank"></span></div>
         <div class="site-marker shelter-site" aria-label="Emergency shelter site"><span class="site-icon">⌂</span><b>Emergency Shelter</b><small>Operational</small></div>
         <div class="site-marker salvage-site" aria-label="Wreck salvage site"><span class="site-icon">◇</span><b>Wreck Salvage</b><small>Accessible</small></div>
         <div class="site-marker collector-site" id="collectorSite" aria-label="Water Collector" hidden><span class="site-icon">◉</span><b>Water Collector</b><small>+2 Water / turn</small></div>
@@ -108,6 +115,6 @@
     </main>
     <footer><span>Local-first • Offline-capable</span><span id="versionLabel">Save format v10</span></footer>
   </div>
-  <script src="./app-v10a.js" defer></script>
+  <script src="./app-v10b.js" defer></script>
 </body>
 </html>
