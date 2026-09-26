@@ -4,6 +4,13 @@ Stranded Colony is a local-first, turn-based colony survival and development gam
 
 ## Current checkpoint
 
+### Increment 6 corrective patch
+- Fixed a v7 → v8 migration defect that reset persisted Northern Ridge story knowledge to the initial Observed state. Future migrations now preserve existing regional knowledge and only seed it when absent.
+- Fixed Spring Water Line project rendering; the project panel logic had been placed in the wrong function and therefore never appeared after Spring Evaluated.
+- Fixed the render-side Build assignment counter so it cannot display undefined.
+- The user's already-reset ridge progression cannot be automatically reconstructed from the overwritten save, but their replayed Spring Evaluated state is now the correct persisted state going forward.
+
+
 - Phase 2 Increment 6 — Spring Water Line Commitment & Construction — **implemented; verification required**
   - Increment 5 is verified, played, and evaluated.
   - Spring Evaluated now unlocks a real project possibility rather than an automatic solution.
