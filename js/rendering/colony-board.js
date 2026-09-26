@@ -9,7 +9,7 @@
     survivor:"./assets/survivors/survivor-field-suit.webp"
   };
   let app=null,host=null,scene=null,background=null,calypso=null,shelter=null,survivors=[],contextEl=null,resizeObserver=null,lastState=null;
-  let waterCollector=null,springLine=null,foodTrial=null,selectedObject=null,time=0;
+  let waterCollector=null,springLine=null,foodTrial=null,auxPower=null,selectedObject=null,time=0;
   let baseCalypsoScale=1,baseShelterScale=1;
 
   async function init(target,contextTarget){
@@ -69,6 +69,14 @@
     [-27,-9,9,27].forEach(x=>{const plant=new PIXI.Graphics().moveTo(x,8).lineTo(x,-5).stroke({width:3,color:0x416f43}).circle(x-4,-8,5).fill({color:0x6f9a55}).circle(x+4,-10,5).fill({color:0x829f5d});foodTrial.addChild(plant)});
     scene.addChild(foodTrial);
 
+    auxPower=new PIXI.Container();
+    auxPower.eventMode="static";auxPower.cursor="pointer";auxPower.on("pointertap",()=>selectWorldObject("power"));
+    const powerBody=new PIXI.Graphics().roundRect(-38,-24,76,48,8).fill({color:0x626c68}).stroke({width:3,color:0x303b38});
+    const powerPanel=new PIXI.Graphics().roundRect(-25,-15,50,30,5).fill({color:0x394641}).stroke({width:2,color:0x8a9b91});
+    const powerGlow=new PIXI.Graphics().circle(17,0,5).fill({color:0x8fd1c8});
+    const powerFeet=new PIXI.Graphics().rect(-31,23,12,8).fill({color:0x414b47}).rect(19,23,12,8).fill({color:0x414b47});
+    auxPower.addChild(powerBody,powerPanel,powerGlow,powerFeet);scene.addChild(auxPower);
+
     for(let i=0;i<6;i++){
       const sprite=new PIXI.Sprite(textures[ASSETS.survivor]);
       sprite.anchor.set(.5,1);
@@ -106,6 +114,7 @@
 
     drawSpringLine(w,h);
     foodTrial.x=w*.88;foodTrial.y=h*.78;foodTrial.scale.set(Math.max(.7,Math.min(1.2,u)));
+    auxPower.x=w*.61;auxPower.y=h*.64;auxPower.scale.set(Math.max(.65,Math.min(1.05,u*.9)));
     positionSurvivors(lastState);
   }
 
@@ -137,6 +146,7 @@
       else if(work==="water"||work.includes("ridge")||work==="evaluate-spring"){x=.17+(i%2)*.04;y=.55+(i%3)*.025}
       else if(work==="build-spring-line"){x=.57+(i%2)*.045;y=.62+(i%3)*.02}
       else if(work==="build-food-trial"){x=.84+(i%2)*.04;y=.76+(i%3)*.025}
+      else if(work==="recover-aux-power"){x=.55+(i%2)*.045;y=.67+(i%3)*.025}
       else if(work.startsWith("assess-")){x=.61+(i%3)*.05;y=.69+(i%2)*.055}
       sprite.x=w*x;sprite.y=h*y;
       sprite.scale.set(Math.max(.045,Math.min(.075,u*.064)));
@@ -154,6 +164,7 @@
     waterCollector.visible=active&&collectorBuilt;
     springLine.visible=active&&springComplete;
     foodTrial.visible=active&&Boolean(state?.playthrough?.projects?.["food-trial"]?.complete);
+    auxPower.visible=active&&Boolean(state?.playthrough?.projects?.["aux-power"]?.complete);
     survivors.forEach(s=>s.visible=active);
     positionSurvivors(state);
     if(contextEl&&!active){
@@ -178,6 +189,7 @@
     waterCollector.alpha=selectedObject==="collector"?1:.92;
     springLine.alpha=selectedObject==="spring"?1:.88;
     foodTrial.alpha=selectedObject==="food"?1:.92;
+    auxPower.alpha=selectedObject==="power"?1:.9;
     if(!contextEl)return;
     contextEl.classList.toggle("selected",Boolean(selectedObject));
     const copy={
@@ -185,7 +197,8 @@
       shelter:["Emergency Shelter • Selected","The shelter protects the colony and provides its first dependable working space. Survivors assigned to <strong>Maintain Shelter</strong> appear here."],
       collector:["Water Collector • Selected","This built improvement adds <strong>+2 Water each turn</strong>. It appears here because the current colony save says the project is complete."],
       spring:["Spring Water Line • Selected","The completed gravity-fed line makes water a <strong>reliable supply</strong> and frees the colony from routine hauling labor."],
-      food:["Food Trial • Selected","The colony’s first cultivated food plot provides a modest <strong>+2 Food each turn</strong>, extending the life of crash supplies."]
+      food:["Food Trial • Selected","The colony’s first cultivated food plot provides a modest <strong>+2 Food each turn</strong>, extending the life of crash supplies."],
+      power:["Auxiliary Power Unit • Selected","Recovered from Calypso and rebuilt, this unit gives the colony <strong>expanded power capacity</strong> for equipment beyond emergency essentials."]
     };
     const item=copy[selectedObject];
     contextEl.innerHTML=item?"<b>"+item[0]+"</b><span>"+item[1]+"</span>":"<b>Colony View</b><span>Tap Calypso, the shelter, or built infrastructure to inspect the physical colony.</span>";
