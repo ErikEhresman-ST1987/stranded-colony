@@ -9,7 +9,7 @@
     survivor:"./assets/survivors/survivor-field-suit.webp"
   };
   let app=null,host=null,scene=null,background=null,calypso=null,shelter=null,survivors=[],contextEl=null,resizeObserver=null,lastState=null;
-  let waterCollector=null,springLine=null,foodTrial=null,auxPower=null,selectedObject=null,time=0;
+  let waterCollector=null,springLine=null,foodTrial=null,auxPower=null,ridgeHotspot=null,selectedObject=null,time=0;
   let baseCalypsoScale=1,baseShelterScale=1;
 
   async function init(target,contextTarget){
@@ -59,6 +59,10 @@
     springLine.cursor="pointer";
     springLine.on("pointertap",()=>selectWorldObject("spring"));
     scene.addChild(springLine);
+
+    ridgeHotspot=new PIXI.Container();ridgeHotspot.eventMode="static";ridgeHotspot.cursor="pointer";ridgeHotspot.on("pointertap",()=>selectWorldObject("ridge"));
+    const ridgeRing=new PIXI.Graphics().circle(0,0,18).fill({color:0x87b9a7,alpha:.12}).stroke({width:3,color:0xd9eee4,alpha:.75});
+    ridgeHotspot.addChild(ridgeRing);scene.addChild(ridgeHotspot);
 
     foodTrial=new PIXI.Container();
     foodTrial.eventMode="static";
@@ -113,6 +117,7 @@
     waterCollector.scale.set(Math.max(.72,Math.min(1.15,u*.95)));
 
     drawSpringLine(w,h);
+    ridgeHotspot.x=w*.15;ridgeHotspot.y=h*.32;ridgeHotspot.scale.set(Math.max(.7,Math.min(1.1,u)));
     foodTrial.x=w*.88;foodTrial.y=h*.78;foodTrial.scale.set(Math.max(.7,Math.min(1.2,u)));
     auxPower.x=w*.61;auxPower.y=h*.64;auxPower.scale.set(Math.max(.65,Math.min(1.05,u*.9)));
     positionSurvivors(lastState);
@@ -163,6 +168,7 @@
     const springComplete=Boolean(state?.playthrough?.projects?.["spring-line"]?.complete);
     waterCollector.visible=active&&collectorBuilt;
     springLine.visible=active&&springComplete;
+    ridgeHotspot.visible=active;
     foodTrial.visible=active&&Boolean(state?.playthrough?.projects?.["food-trial"]?.complete);
     auxPower.visible=active&&Boolean(state?.playthrough?.projects?.["aux-power"]?.complete);
     survivors.forEach(s=>s.visible=active);
@@ -188,20 +194,10 @@
     shelter.tint=selectedObject==="shelter"?0xffe3a1:0xffffff;
     waterCollector.alpha=selectedObject==="collector"?1:.92;
     springLine.alpha=selectedObject==="spring"?1:.88;
+    ridgeHotspot.alpha=selectedObject==="ridge"?1:.62;
     foodTrial.alpha=selectedObject==="food"?1:.92;
     auxPower.alpha=selectedObject==="power"?1:.9;
-    if(!contextEl)return;
-    contextEl.classList.toggle("selected",Boolean(selectedObject));
-    const copy={
-      calypso:["Calypso Wreck • Selected","The damaged ship remains the colony’s primary salvage source. Assign survivors to <strong>Salvage Wreck</strong> below to put activity at this site."],
-      shelter:["Emergency Shelter • Selected","The shelter protects the colony and provides its first dependable working space. Survivors assigned to <strong>Maintain Shelter</strong> appear here."],
-      collector:["Water Collector • Selected","This built improvement adds <strong>+2 Water each turn</strong>. It appears here because the current colony save says the project is complete."],
-      spring:["Spring Water Line • Selected","The completed gravity-fed line makes water a <strong>reliable supply</strong> and frees the colony from routine hauling labor."],
-      food:["Food Trial • Selected","The colony’s first cultivated food plot provides a modest <strong>+2 Food each turn</strong>, extending the life of crash supplies."],
-      power:["Auxiliary Power Unit • Selected","Recovered from Calypso and rebuilt, this unit gives the colony <strong>expanded power capacity</strong> for equipment beyond emergency essentials."]
-    };
-    const item=copy[selectedObject];
-    contextEl.innerHTML=item?"<b>"+item[0]+"</b><span>"+item[1]+"</span>":"<b>Colony View</b><span>Tap Calypso, the shelter, or built infrastructure to inspect the physical colony.</span>";
+    window.dispatchEvent(new CustomEvent("colony-world-select",{detail:{id:selectedObject}}));
   }
 
   function tick(ticker){
@@ -217,5 +213,7 @@
     if(waterCollector?.visible&&selectedObject==="collector")waterCollector.scale.set(waterCollector.scale.x*(1+Math.sin(time*3)*.0015));
   }
 
-  window.ColonyRenderer={init,renderState};
+  function select(id){selectedObject=id;updateSelection()}
+  function getSelected(){return selectedObject}
+  window.ColonyRenderer={init,renderState,select,getSelected};
 })();
