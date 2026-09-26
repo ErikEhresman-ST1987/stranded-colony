@@ -4,6 +4,12 @@ Stranded Colony is a local-first, turn-based colony survival and development gam
 
 ## Current checkpoint
 
+### Increment 8 corrective patch
+- Fixed the render-side assessment counters that caused the assignment summary to display **Assess NaN**.
+- No gameplay, save-format, opportunity, or assessment rules changed.
+- Uses a fresh physical script filename to avoid stale PWA assets.
+
+
 - Phase 2 Increment 8 — Open Competing Priorities — **implemented; verification required**
   - Increment 7 is verified by play: reliable spring water removes hauling labor and returns survivor capacity to the player.
   - After the completed water line, three optional one-turn assessments become available simultaneously: **Assess Food Sources**, **Assess Power Systems**, and **Assess Shelter Upgrade**.
