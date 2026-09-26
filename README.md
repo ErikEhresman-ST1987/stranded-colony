@@ -4,6 +4,31 @@ Stranded Colony is a local-first, turn-based colony survival and development gam
 
 ## Current checkpoint
 
+- Phase 2 Increment 7 — Reliable Water Capability — **implemented; verification required**
+  - Increment 6 is verified, played, and evaluated.
+  - A completed Spring Water Line now removes the colony's recurring base water-consumption burden.
+  - **Secure Water** is removed from assignment menus once the line is operational.
+  - Any survivors still assigned to Secure Water from the previous turn are released to **Unassigned** rather than automatically redirected.
+  - The Water pressure card changes to **Reliable supply** and explicitly reports that hauling labor has been freed.
+  - The existing Phase 1 Water Collector remains a separate +2 Water/turn improvement, so it can continue adding reserve water without survivor labor.
+  - Save format advances to v9 with v8 → v9 migration preserving existing regional/story knowledge and project state.
+  - New physical script filename avoids stale installed-PWA assets.
+
+### Phase 2 Increment 7 verification
+1. Load the existing completed-line colony and confirm v8 → v9 without losing turn, resources, Spring Evaluated knowledge, Water Collector, Efficient Salvage, or Spring Water Line completion.
+2. Confirm survivors who were previously assigned to Secure Water now show **Unassigned**. They must not be automatically moved to another task.
+3. Open survivor assignment menus and confirm **Secure Water** is no longer available.
+4. Confirm the Water pressure card now says **Reliable supply** and explains that the spring line has freed hauling labor.
+5. Confirm the Spring Water Line panel says **Operational • routine water hauling eliminated**.
+6. Choose new work for the freed survivors yourself and commit a turn.
+7. Confirm the colony no longer loses 6 Water as base survivor consumption. If the existing Water Collector is built, Water should instead increase by +2 that turn unless another future mechanic changes it.
+8. Confirm food, salvage, shelter, events, and other assignments continue resolving normally.
+9. Close/reopen once and confirm the completed capability and assignments persist.
+10. Gameplay judgment: does the first planning turn after solving water feel materially more capable because those survivor slots are now yours to use elsewhere?
+
+Do not begin Increment 8 until this increment is verified, played, and evaluated.
+
+
 ### Increment 6 corrective patch
 - Fixed a v7 → v8 migration defect that reset persisted Northern Ridge story knowledge to the initial Observed state. Future migrations now preserve existing regional knowledge and only seed it when absent.
 - Fixed Spring Water Line project rendering; the project panel logic had been placed in the wrong function and therefore never appeared after Spring Evaluated.
