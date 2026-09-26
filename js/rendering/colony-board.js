@@ -9,7 +9,8 @@
     survivor:"./assets/survivors/survivor-field-suit.webp"
   };
   let app=null,host=null,scene=null,background=null,calypso=null,shelter=null,survivors=[],contextEl=null,resizeObserver=null,lastState=null;
-  let baseCalypsoScale=1,selected=false,time=0;
+  let waterCollector=null,springLine=null,selectedObject=null,time=0;
+  let baseCalypsoScale=1,baseShelterScale=1;
 
   async function init(target,contextTarget){
     host=target;contextEl=contextTarget;
@@ -33,13 +34,31 @@
     calypso.anchor.set(.5);
     calypso.eventMode="static";
     calypso.cursor="pointer";
-    calypso.on("pointertap",()=>selectCalypso());
+    calypso.on("pointertap",()=>selectWorldObject("calypso"));
     scene.addChild(calypso);
 
     shelter=new PIXI.Sprite(textures[ASSETS.shelter]);
     shelter.anchor.set(.5);
-    shelter.eventMode="none";
+    shelter.eventMode="static";
+    shelter.cursor="pointer";
+    shelter.on("pointertap",()=>selectWorldObject("shelter"));
     scene.addChild(shelter);
+
+    waterCollector=new PIXI.Container();
+    waterCollector.eventMode="static";
+    waterCollector.cursor="pointer";
+    waterCollector.on("pointertap",()=>selectWorldObject("collector"));
+    const collectorTank=new PIXI.Graphics().roundRect(-18,-28,36,50,8).fill({color:0xaeb9ad}).stroke({width:3,color:0x56645c});
+    const collectorCap=new PIXI.Graphics().roundRect(-14,-34,28,9,4).fill({color:0x778980});
+    const collectorDrop=new PIXI.Graphics().circle(0,-5,5).fill({color:0x6ea9ad});
+    waterCollector.addChild(collectorTank,collectorCap,collectorDrop);
+    scene.addChild(waterCollector);
+
+    springLine=new PIXI.Container();
+    springLine.eventMode="static";
+    springLine.cursor="pointer";
+    springLine.on("pointertap",()=>selectWorldObject("spring"));
+    scene.addChild(springLine);
 
     for(let i=0;i<6;i++){
       const sprite=new PIXI.Sprite(textures[ASSETS.survivor]);
@@ -70,9 +89,26 @@
     calypso.scale.set(baseCalypsoScale);
 
     shelter.x=w*.74;shelter.y=h*.59;
-    shelter.scale.set(Math.max(.16,Math.min(.31,u*.25)));
+    baseShelterScale=Math.max(.16,Math.min(.31,u*.25));
+    shelter.scale.set(baseShelterScale);
 
+    waterCollector.x=w*.82;waterCollector.y=h*.65;
+    waterCollector.scale.set(Math.max(.72,Math.min(1.15,u*.95)));
+
+    drawSpringLine(w,h);
     positionSurvivors(lastState);
+  }
+
+  function drawSpringLine(w,h){
+    if(!springLine)return;
+    springLine.removeChildren();
+    const points=[w*.12,h*.34,w*.29,h*.42,w*.48,h*.51,w*.68,h*.59,w*.79,h*.64];
+    const pipe=new PIXI.Graphics().moveTo(points[0],points[1]);
+    for(let i=2;i<points.length;i+=2)pipe.lineTo(points[i],points[i+1]);
+    pipe.stroke({width:Math.max(4,w*.006),color:0xb8a878,alpha:.95});
+    const source=new PIXI.Graphics().circle(points[0],points[1],Math.max(7,w*.009)).fill({color:0x75aeb0,alpha:.9}).stroke({width:2,color:0xd7ebe6});
+    const tank=new PIXI.Graphics().roundRect(points[8]-15,points[9]-25,30,42,7).fill({color:0xaab4aa}).stroke({width:3,color:0x53635b});
+    springLine.addChild(pipe,source,tank);
   }
 
   function positionSurvivors(state){
@@ -90,6 +126,7 @@
       else if(work==="forage"){x=.84+(i%2)*.035;y=.77+(i%3)*.02}
       else if(work==="water"||work.includes("ridge")||work==="evaluate-spring"){x=.17+(i%2)*.04;y=.55+(i%3)*.025}
       else if(work==="build-spring-line"){x=.57+(i%2)*.045;y=.62+(i%3)*.02}
+      else if(work.startsWith("assess-")){x=.61+(i%3)*.05;y=.69+(i%2)*.055}
       sprite.x=w*x;sprite.y=h*y;
       sprite.scale.set(Math.max(.045,Math.min(.075,u*.064)));
       sprite.alpha=work==="unassigned"?.86:1;
@@ -101,28 +138,43 @@
     if(!app)return;
     const active=Boolean(state?.playthrough);
     calypso.visible=active;shelter.visible=active;
+    const collectorBuilt=Boolean(state?.playthrough?.projects?.["water-collector"]?.complete);
+    const springComplete=Boolean(state?.playthrough?.projects?.["spring-line"]?.complete);
+    waterCollector.visible=active&&collectorBuilt;
+    springLine.visible=active&&springComplete;
     survivors.forEach(s=>s.visible=active);
     positionSurvivors(state);
     if(contextEl&&!active){
       contextEl.hidden=false;
       contextEl.innerHTML="<b>Crash Site</b><span>Create or load a colony to bring the physical site online.</span>";
-    }else if(contextEl&&!selected){
+    }else if(contextEl&&!selectedObject){
       contextEl.hidden=false;
-      contextEl.innerHTML="<b>Colony View</b><span>Tap the Calypso wreck to inspect the salvage site. Survivor positions respond to current work assignments.</span>";
+      contextEl.innerHTML="<b>Colony View</b><span>Tap Calypso, the shelter, or built infrastructure to inspect the physical colony. Survivor positions respond to current work assignments.</span>";
     }
+    updateSelection();
   }
 
-  function selectCalypso(){
+  function selectWorldObject(id){
     if(!lastState)return;
-    selected=!selected;
-    calypso.tint=selected?0xffe3a1:0xffffff;
-    if(contextEl){
-      contextEl.hidden=false;
-      contextEl.classList.toggle("selected",selected);
-      contextEl.innerHTML=selected
-        ?"<b>Calypso Wreck • Selected</b><span>The damaged ship remains the colony’s primary salvage source. Assign survivors to <strong>Salvage Wreck</strong> below to put activity at this site.</span>"
-        :"<b>Colony View</b><span>Tap the Calypso wreck to inspect the salvage site. Survivor positions respond to current work assignments.</span>";
-    }
+    selectedObject=selectedObject===id?null:id;
+    updateSelection();
+  }
+
+  function updateSelection(){
+    calypso.tint=selectedObject==="calypso"?0xffe3a1:0xffffff;
+    shelter.tint=selectedObject==="shelter"?0xffe3a1:0xffffff;
+    waterCollector.alpha=selectedObject==="collector"?1:.92;
+    springLine.alpha=selectedObject==="spring"?1:.88;
+    if(!contextEl)return;
+    contextEl.classList.toggle("selected",Boolean(selectedObject));
+    const copy={
+      calypso:["Calypso Wreck • Selected","The damaged ship remains the colony’s primary salvage source. Assign survivors to <strong>Salvage Wreck</strong> below to put activity at this site."],
+      shelter:["Emergency Shelter • Selected","The shelter protects the colony and provides its first dependable working space. Survivors assigned to <strong>Maintain Shelter</strong> appear here."],
+      collector:["Water Collector • Selected","This built improvement adds <strong>+2 Water each turn</strong>. It appears here because the current colony save says the project is complete."],
+      spring:["Spring Water Line • Selected","The completed gravity-fed line makes water a <strong>reliable supply</strong> and frees the colony from routine hauling labor."]
+    };
+    const item=copy[selectedObject];
+    contextEl.innerHTML=item?"<b>"+item[0]+"</b><span>"+item[1]+"</span>":"<b>Colony View</b><span>Tap Calypso, the shelter, or built infrastructure to inspect the physical colony.</span>";
   }
 
   function tick(ticker){
@@ -132,10 +184,10 @@
       if(!sprite.visible)return;
       sprite.rotation=Math.sin(time*1.25+i*.9)*.006;
     });
-    if(selected){
-      const pulse=1+Math.sin(time*3)*.018;
-      calypso.scale.set(baseCalypsoScale*pulse);
-    }else calypso.scale.set(baseCalypsoScale);
+    const pulse=1+Math.sin(time*3)*.018;
+    calypso.scale.set(baseCalypsoScale*(selectedObject==="calypso"?pulse:1));
+    shelter.scale.set(baseShelterScale*(selectedObject==="shelter"?pulse:1));
+    if(waterCollector?.visible&&selectedObject==="collector")waterCollector.scale.set(waterCollector.scale.x*(1+Math.sin(time*3)*.0015));
   }
 
   window.ColonyRenderer={init,renderState};
