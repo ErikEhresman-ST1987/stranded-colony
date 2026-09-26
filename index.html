@@ -8,7 +8,7 @@
   <title>Stranded Colony</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css?v=6">
+  <link rel="stylesheet" href="./styles.css?v=7">
 </head>
 <body>
   <div class="app-shell">
@@ -35,9 +35,12 @@
         <div class="terrain terrain-b" aria-hidden="true"></div>
         <div class="tree-grove grove-a" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
         <div class="tree-grove grove-b" aria-hidden="true"><i></i><i></i><i></i></div>
+        <div class="ground-cover cover-a" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="ground-cover cover-b" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
         <div class="rock-field" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+        <div class="crash-scar" aria-hidden="true"></div>
         <div class="ship-wreck" aria-hidden="true">
-          <span class="ship-tail"></span><span class="ship-body"></span><span class="ship-cockpit"></span><span class="ship-panel p1"></span><span class="ship-panel p2"></span><span class="ship-scar s1"></span><span class="ship-scar s2"></span><span class="ship-break"></span>
+          <span class="ship-aft"></span><span class="ship-fin fin-top"></span><span class="ship-fin fin-bottom"></span><span class="ship-body"></span><span class="ship-spine"></span><span class="ship-cockpit"></span><span class="ship-engine e1"></span><span class="ship-engine e2"></span><span class="ship-panel p1"></span><span class="ship-panel p2"></span><span class="ship-scar s1"></span><span class="ship-scar s2"></span><span class="ship-break"></span><span class="debris d1"></span><span class="debris d2"></span><span class="debris d3"></span>
         </div>
         <div class="shelter-visual" aria-hidden="true"><span class="shelter-roof"></span><span class="shelter-door"></span><span class="shelter-crate c1"></span><span class="shelter-crate c2"></span></div>
         <div class="spring-line-visual" id="springLineVisual" aria-hidden="true" hidden><span class="spring-source"></span><span class="pipe pipe-a"></span><span class="pipe pipe-b"></span><span class="pipe pipe-c"></span><span class="tank"></span></div>
@@ -45,6 +48,7 @@
         <div class="site-marker salvage-site" aria-label="Wreck salvage site"><span class="site-icon">◇</span><b>Wreck Salvage</b><small>Accessible</small></div>
         <div class="site-marker collector-site" id="collectorSite" aria-label="Water Collector" hidden><span class="site-icon">◉</span><b>Water Collector</b><small>+2 Water / turn</small></div>
         <div class="site-marker ridge-marker" id="ridgeMarker" aria-label="Northern Ridge observation" hidden><span class="site-icon">△</span><b>Northern Ridge</b><small>Observed • dense vegetation</small></div>
+        <div class="work-zone" aria-hidden="true"><span class="work-table"></span><span class="supply-box b1"></span><span class="supply-box b2"></span><span class="mast"></span></div>
         <div class="survivor-cluster" id="survivorCluster" aria-label="Survivors at the crash site"></div>
         <div class="board-content">
           <p class="board-kicker">TEMPERATE FRONTIER</p>
