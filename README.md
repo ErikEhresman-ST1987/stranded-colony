@@ -4,6 +4,27 @@ Stranded Colony is a local-first, turn-based colony survival and development gam
 
 ## Current checkpoint
 
+- Phase 2 Increment 10 — Crash-Site Art Direction Upgrade — **implemented; visual evaluation required**
+  - Increment 9 proved the layered board technique but was evaluated as only partially successful visually.
+  - This pass replaces rather than decorates the prototype look: the wreck receives a new asymmetrical colony-ship silhouette, engines/fins/cockpit/broken hull/debris and crash scar; terrain uses irregular layered foothills instead of the prior simple polygon band.
+  - Shelter is more substantial and physically integrated with a small work zone, supplies, mast, ground cover, rocks and vegetation.
+  - Survivor board tokens now read as tiny human figures rather than vertical capsules.
+  - Existing gameplay labels remain for clarity and all gameplay/save rules remain unchanged. Save format stays v10.
+  - Goal of this increment: judge the art direction, not merely confirm that more scenery exists.
+
+### Phase 2 Increment 10 visual evaluation
+1. Confirm v10 colony state is unchanged.
+2. Compare the board directly with the prior screenshot: the ship should have a materially different silhouette, not merely new surface decoration.
+3. Judge whether the ridge reads as terrain/foothills rather than an arcade-style polygon mountain band.
+4. Confirm shelter/work area feels physically part of the crash site.
+5. Confirm the six board tokens read as people at normal iPad viewing size.
+6. Confirm labels and gameplay state remain easier to read than the scenery.
+7. Check for overlaps/clipping on iPad and, when convenient, iPhone.
+8. Give a qualitative judgment: **Does this establish the right illustrated sci-fi board-game direction strongly enough to keep refining?**
+
+Do not expand visual detail further until this direction is evaluated.
+
+
 - Phase 2 Increment 9 — Colony Board Visual Foundation — **implemented; verification required**
   - Increment 8 is verified, played, and evaluated.
   - First production-facing visual pass now follows the approved Visual Discovery direction: fixed elevated board, temperate alien frontier, persistent wreck anchor, natural terrain, readable colony structures, restrained illustrated sci-fi feel.
