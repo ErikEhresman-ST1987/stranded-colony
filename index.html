@@ -8,7 +8,7 @@
   <title>Stranded Colony</title>
   <link rel="manifest" href="./manifest.json">
   <link rel="icon" href="./icon.svg" type="image/svg+xml">
-  <link rel="stylesheet" href="./styles.css?v=12">
+  <link rel="stylesheet" href="./styles.css?v=14">
 </head>
 <body>
   <div class="app-shell">
@@ -28,31 +28,20 @@
         <span><strong>Status</strong> <b id="colonyStatus">No active colony</b></span>
       </section>
 
-      <section class="board-shell" aria-labelledby="boardTitle">
-        <div class="sky-haze" aria-hidden="true"></div>
-        <div class="ridge-landform" aria-hidden="true"><span></span></div>
-        <div class="terrain terrain-a" aria-hidden="true"></div>
-        <div class="terrain terrain-b" aria-hidden="true"></div>
-        <div class="tree-grove grove-a" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-        <div class="tree-grove grove-b" aria-hidden="true"><i></i><i></i><i></i></div>
-        <div class="ground-cover cover-a" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i></div>
-        <div class="ground-cover cover-b" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-        <div class="rock-field" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
-        <div class="crash-scar" aria-hidden="true"></div>
-        <div class="ship-wreck ship-wreck-art" aria-hidden="true"><img src="./assets/calypso-wreck-test.webp" alt="" draggable="false"></div>
-        <div class="shelter-visual shelter-art" aria-hidden="true"><img src="./assets/emergency-shelter.PNG" alt="" draggable="false"></div>
-        <div class="spring-line-visual" id="springLineVisual" aria-hidden="true" hidden><span class="spring-source"></span><span class="pipe pipe-a"></span><span class="pipe pipe-b"></span><span class="pipe pipe-c"></span><span class="tank"></span></div>
-        <div class="site-marker shelter-site" aria-label="Emergency shelter site"><span class="site-icon">⌂</span><b>Emergency Shelter</b><small>Operational</small></div>
-        <div class="site-marker salvage-site" aria-label="Wreck salvage site"><span class="site-icon">◇</span><b>Wreck Salvage</b><small>Accessible</small></div>
-        <div class="site-marker collector-site" id="collectorSite" aria-label="Water Collector" hidden><span class="site-icon">◉</span><b>Water Collector</b><small>+2 Water / turn</small></div>
-        <div class="site-marker ridge-marker" id="ridgeMarker" aria-label="Northern Ridge observation" hidden><span class="site-icon">△</span><b>Northern Ridge</b><small>Observed • dense vegetation</small></div>
-        <div class="work-zone" aria-hidden="true"><span class="work-table"></span><span class="supply-box b1"></span><span class="supply-box b2"></span><span class="mast"></span></div>
-        <div class="survivor-cluster" id="survivorCluster" aria-label="Survivors at the crash site"></div>
+      <section class="board-shell pixi-board-shell" aria-labelledby="boardTitle">
+        <div id="pixiColonyBoard" class="pixi-colony-board"></div>
         <div class="board-content">
           <p class="board-kicker">TEMPERATE FRONTIER</p>
           <h2 id="boardTitle">Crash Site</h2>
           <p id="boardMessage">Create or load a colony to reveal the first colony state.</p>
         </div>
+        <div id="worldContext" class="world-context" role="status" aria-live="polite">
+          <b>Crash Site</b><span>Loading graphical colony view…</span>
+        </div>
+        <div id="springLineVisual" hidden aria-hidden="true"></div>
+        <div id="collectorSite" hidden aria-hidden="true"></div>
+        <div id="ridgeMarker" hidden><small></small></div>
+        <div id="survivorCluster" hidden aria-hidden="true"></div>
       </section>
 
       <section class="pressure-panel" id="pressurePanel" aria-label="Current colony pressures">
@@ -115,8 +104,10 @@
         <p class="error-message" id="errorMessage" role="alert" hidden></p>
       </section>
     </main>
-    <footer><span>Local-first • Offline-capable</span><span id="versionLabel">Save format v10 • Visual 12 • Gameplay 13</span></footer>
+    <footer><span>Local-first • Offline-capable</span><span id="versionLabel">Save format v10 • Pixi Proof 14 • Gameplay 13</span></footer>
   </div>
-  <script src="./app-v10c.js" defer></script>
+  <script src="./vendor/pixi.min.js" defer></script>
+  <script src="./js/rendering/colony-board.js" defer></script>
+  <script src="./app-v10d.js" defer></script>
 </body>
 </html>
