@@ -1,0 +1,33 @@
+name: Vendor PixiJS 8.21.0
+
+on:
+  push:
+    paths:
+      - ".github/workflows/vendor-pixi.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  vendor:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download pinned PixiJS production build
+        run: |
+          mkdir -p vendor
+          curl --fail --location --retry 3 \
+            "https://cdn.jsdelivr.net/npm/pixi.js@8.21.0/dist/pixi.min.js" \
+            --output vendor/pixi.min.js
+          test -s vendor/pixi.min.js
+      - name: Commit vendored build
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add vendor/pixi.min.js
+          if git diff --cached --quiet; then
+            echo "PixiJS already vendored."
+            exit 0
+          fi
+          git commit -m "Add pinned PixiJS 8.21.0 production build"
+          git push
