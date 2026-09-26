@@ -9,7 +9,7 @@
     survivor:"./assets/survivors/survivor-field-suit.webp"
   };
   let app=null,host=null,scene=null,background=null,calypso=null,shelter=null,survivors=[],contextEl=null,resizeObserver=null,lastState=null;
-  let waterCollector=null,springLine=null,selectedObject=null,time=0;
+  let waterCollector=null,springLine=null,foodTrial=null,selectedObject=null,time=0;
   let baseCalypsoScale=1,baseShelterScale=1;
 
   async function init(target,contextTarget){
@@ -60,6 +60,15 @@
     springLine.on("pointertap",()=>selectWorldObject("spring"));
     scene.addChild(springLine);
 
+    foodTrial=new PIXI.Container();
+    foodTrial.eventMode="static";
+    foodTrial.cursor="pointer";
+    foodTrial.on("pointertap",()=>selectWorldObject("food"));
+    const soil=new PIXI.Graphics().roundRect(-44,-18,88,36,9).fill({color:0x725a3f,alpha:.95}).stroke({width:2,color:0x4f4738});
+    foodTrial.addChild(soil);
+    [-27,-9,9,27].forEach(x=>{const plant=new PIXI.Graphics().moveTo(x,8).lineTo(x,-5).stroke({width:3,color:0x416f43}).circle(x-4,-8,5).fill({color:0x6f9a55}).circle(x+4,-10,5).fill({color:0x829f5d});foodTrial.addChild(plant)});
+    scene.addChild(foodTrial);
+
     for(let i=0;i<6;i++){
       const sprite=new PIXI.Sprite(textures[ASSETS.survivor]);
       sprite.anchor.set(.5,1);
@@ -96,6 +105,7 @@
     waterCollector.scale.set(Math.max(.72,Math.min(1.15,u*.95)));
 
     drawSpringLine(w,h);
+    foodTrial.x=w*.88;foodTrial.y=h*.78;foodTrial.scale.set(Math.max(.7,Math.min(1.2,u)));
     positionSurvivors(lastState);
   }
 
@@ -126,6 +136,7 @@
       else if(work==="forage"){x=.84+(i%2)*.035;y=.77+(i%3)*.02}
       else if(work==="water"||work.includes("ridge")||work==="evaluate-spring"){x=.17+(i%2)*.04;y=.55+(i%3)*.025}
       else if(work==="build-spring-line"){x=.57+(i%2)*.045;y=.62+(i%3)*.02}
+      else if(work==="build-food-trial"){x=.84+(i%2)*.04;y=.76+(i%3)*.025}
       else if(work.startsWith("assess-")){x=.61+(i%3)*.05;y=.69+(i%2)*.055}
       sprite.x=w*x;sprite.y=h*y;
       sprite.scale.set(Math.max(.045,Math.min(.075,u*.064)));
@@ -142,6 +153,7 @@
     const springComplete=Boolean(state?.playthrough?.projects?.["spring-line"]?.complete);
     waterCollector.visible=active&&collectorBuilt;
     springLine.visible=active&&springComplete;
+    foodTrial.visible=active&&Boolean(state?.playthrough?.projects?.["food-trial"]?.complete);
     survivors.forEach(s=>s.visible=active);
     positionSurvivors(state);
     if(contextEl&&!active){
@@ -149,7 +161,7 @@
       contextEl.innerHTML="<b>Crash Site</b><span>Create or load a colony to bring the physical site online.</span>";
     }else if(contextEl&&!selectedObject){
       contextEl.hidden=false;
-      contextEl.innerHTML="<b>Colony View</b><span>Tap Calypso, the shelter, or built infrastructure to inspect the physical colony. Survivor positions respond to current work assignments.</span>";
+      contextEl.innerHTML="<b>Colony View</b><span>Tap Calypso, the shelter, or built colony improvements to inspect the physical colony. Survivor positions respond to current work assignments.</span>";
     }
     updateSelection();
   }
@@ -165,13 +177,15 @@
     shelter.tint=selectedObject==="shelter"?0xffe3a1:0xffffff;
     waterCollector.alpha=selectedObject==="collector"?1:.92;
     springLine.alpha=selectedObject==="spring"?1:.88;
+    foodTrial.alpha=selectedObject==="food"?1:.92;
     if(!contextEl)return;
     contextEl.classList.toggle("selected",Boolean(selectedObject));
     const copy={
       calypso:["Calypso Wreck • Selected","The damaged ship remains the colony’s primary salvage source. Assign survivors to <strong>Salvage Wreck</strong> below to put activity at this site."],
       shelter:["Emergency Shelter • Selected","The shelter protects the colony and provides its first dependable working space. Survivors assigned to <strong>Maintain Shelter</strong> appear here."],
       collector:["Water Collector • Selected","This built improvement adds <strong>+2 Water each turn</strong>. It appears here because the current colony save says the project is complete."],
-      spring:["Spring Water Line • Selected","The completed gravity-fed line makes water a <strong>reliable supply</strong> and frees the colony from routine hauling labor."]
+      spring:["Spring Water Line • Selected","The completed gravity-fed line makes water a <strong>reliable supply</strong> and frees the colony from routine hauling labor."],
+      food:["Food Trial • Selected","The colony’s first cultivated food plot provides a modest <strong>+2 Food each turn</strong>, extending the life of crash supplies."]
     };
     const item=copy[selectedObject];
     contextEl.innerHTML=item?"<b>"+item[0]+"</b><span>"+item[1]+"</span>":"<b>Colony View</b><span>Tap Calypso, the shelter, or built infrastructure to inspect the physical colony.</span>";
