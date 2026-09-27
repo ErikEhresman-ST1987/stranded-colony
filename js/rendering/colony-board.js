@@ -173,13 +173,7 @@
     auxPower.visible=active&&Boolean(state?.playthrough?.projects?.["aux-power"]?.complete);
     survivors.forEach(s=>s.visible=active);
     positionSurvivors(state);
-    if(contextEl&&!active){
-      contextEl.hidden=false;
-      contextEl.innerHTML="<b>Crash Site</b><span>Create or load a colony to bring the physical site online.</span>";
-    }else if(contextEl&&!selectedObject){
-      contextEl.hidden=false;
-      contextEl.innerHTML="<b>Colony View</b><span>Tap Calypso, the shelter, or built colony improvements to inspect the physical colony. Survivor positions respond to current work assignments.</span>";
-    }
+    if(contextEl)contextEl.hidden=false;
     updateSelection();
   }
 
