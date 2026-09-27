@@ -1,5 +1,5 @@
-const CACHE_NAME="stranded-colony-shell-interface-18b";
-const APP_SHELL=["./index.html","./styles.css?v=18b","./app-v10h.js","./js/rendering/colony-board.js","./vendor/pixi.min.js","./manifest.json","./icon.svg","./assets/backgrounds/temperate-frontier-crash-site.webp","./assets/calypso-wreck-test.webp","./assets/emergency-shelter.PNG","./assets/survivors/survivor-field-suit.webp"];
+const CACHE_NAME="stranded-colony-shell-gameplay-19";
+const APP_SHELL=["./index.html","./styles.css?v=18b","./app-v10i.js","./js/rendering/colony-board.js","./vendor/pixi.min.js","./manifest.json","./icon.svg","./assets/backgrounds/temperate-frontier-crash-site.webp","./assets/calypso-wreck-test.webp","./assets/emergency-shelter.PNG","./assets/survivors/survivor-field-suit.webp"];
 self.addEventListener("install",event=>{event.waitUntil(caches.open(CACHE_NAME).then(cache=>cache.addAll(APP_SHELL)).then(()=>self.skipWaiting()))});
 self.addEventListener("activate",event=>{event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key.startsWith("stranded-colony-shell-")&&key!==CACHE_NAME).map(key=>caches.delete(key)))).then(()=>self.clients.claim()))});
 self.addEventListener("fetch",event=>{
